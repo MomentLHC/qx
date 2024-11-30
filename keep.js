@@ -1,14 +1,18 @@
 /*
- *
- *
+*
+*
 脚本功能：keep 课程预览 直播课。会员付费课跟练 会员训练计划
 
 [rewrite_local]
 # >keep 课程预览 直播课。会员付费课跟练 会员训练计划
 ^https?:\/\/(api|kit).gotokeep\.com\/(nuocha|gerudo|athena|nuocha\/plans|suit\/v5\/smart|kprime\/v4\/suit\/sales)\/ url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/main/keep.js
 
+[mitm]
+hostname = *keep*,162.14.5.*,42.187.199.*,101.42.124.*
 
-
+*
+*
+*/
 // 定义响应体并通过正则表达式替换特定字段
 var modifiedBody = $response['body']
   .replace(/\"memberStatus":\d+/g, '"memberStatus":1') // 设置会员状态为1
