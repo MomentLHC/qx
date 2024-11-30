@@ -16,8 +16,8 @@ hostname = *keep*,162.14.5.*,42.187.199.*,101.42.124.*
 // 定义响应体并通过正则表达式替换特定字段
 var modifiedBody = $response['body']
   .replace(/\"memberStatus":\d+/g, '"memberStatus":1') // 设置会员状态为1
-  .replace(/\"username":".*?"/g, '"username":"UpdatedUser"') // 修改用户名
-  .replace(/\"buttonText":".*?"/g, '"buttonText":"UpdatedButton"') // 修改按钮文本
+  .replace(/\"username":".*?"/g, '"username":"Luis"') // 修改用户名
+  .replace(/\"buttonText":".*?"/g, '"buttonText":"会员已解锁"') // 修改按钮文本
   .replace(/\"hasPaid\":\w+/g, '"hasPaid":true') // 设置支付状态为 true
   .replace(/\"downLoadAll\":\w+/g, '"downLoadAll":true') // 设置下载权限为 true
   .replace(/\"videoTime\":\d+/g, '"videoTime":999999') // 修改视频时间为 999999
