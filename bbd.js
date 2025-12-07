@@ -8,7 +8,7 @@
 *******************************
 [rewrite_local]
 # >百度网盘
-^https?:\/\/pan.baidu.com.+(rest\/.+\/membership\/user|api\/user\/getinfo|act\/v2\/welfare\/list|api\/taskscore\/tasklist)\? url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/main/test2.js
+^https?:\/\/pan.baidu.com.+(rest\/.+\/membership\/user|api\/user\/getinfo|act\/v2\/welfare\/list|api\/taskscore\/tasklist)\? url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/ml/bbd.js
 
 [mitm] 
 hostname = pan.baidu.com
