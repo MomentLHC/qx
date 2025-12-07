@@ -41,8 +41,8 @@ if (typeof responseBody === 'string') {
 
         // 如果 URL 包含 '/user/getinfo?'，则修改 JSON 数据中的用户信息
         if (requestUrl.indexOf('/user/getinfo?') !== -1) {
-            parsedJson.records[0].nick_name = 'luis';
-            parsedJson.records[0].priority_name = 'luis';
+            parsedJson.records[0].nick_name = 'IMPWELL';
+            parsedJson.records[0].priority_name = 'IMPWELL';
             responseBody = JSON.stringify(parsedJson); // 将修改后的 JSON 对象转换为字符串
         }
 
