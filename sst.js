@@ -1,6 +1,6 @@
 [rewrite_local]
 # > shuashuati
-^https?:\/\/api\.butingxue\.net\/ppxue\/user\/app\/login url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/new/ml/sst.js
+^https?:\/\/api\.butingxue\.net\/ppxue\/user\/app\/login url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/sst.js
 
 [mitm]
 hostname = api.butingxue.net
