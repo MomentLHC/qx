@@ -1,4 +1,6 @@
 /*
+ *
+ *
 [rewrite_local]
 # > 趣乐转谱 (EditScore)
 ^https?:\/\/editscore-api\.quthing\.com\/rolls\/score\/(limit|query) url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/lyzp.js
@@ -6,10 +8,9 @@
 
 [mitm]
 hostname = editscore-api.quthing.com
-
+*
+*
 */
-
-// ---------------- 下面是 JS 脚本内容 ----------------
 
 var body = $response.body;
 var url = $request.url;
