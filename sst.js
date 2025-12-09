@@ -4,57 +4,51 @@
 
 [mitm]
 hostname = api.butingxue.net
+/*
+脚本逻辑：
+1. 获取原始响应体。
+2. 仅修改 state (状态) 和 vipToTime (时间)。
+3. 保留 token, serviceUrl 等动态字段，防止 App 校验失败。
+*/
 
-var body = $response.body || "{}";
-var obj = {};
+var body = $response.body;
+var url = $request.url;
 
 try {
-    // 1. 解析原始响应，目的是提取你真实的 Token 和 UserId
-    // 这样即使 APP 升级了 Token 校验机制，脚本也能长期有效
-    var originalObj = JSON.parse(body);
+    var obj = JSON.parse(body);
+
+    if (obj.data) {
+        // ---------------- 核心破解逻辑 ----------------
+        
+        // 1. 修改 VIP 状态码
+        // 原始是 -1 (int)，修改为 2 (int)，注意类型不要用字符串
+        obj.data.state = 2; 
+
+        // 2. 修改过期时间 (2099年)
+        obj.data.vipToTimeStr = "2099-09-09 09:09:09";
+        obj.data.vipToTime = "Wed Sep 09 09:09:09 CST 2099";
+
+        // 3. 修改金币/豆 (可选，数字类型)
+        obj.data.totalCoin = "99999"; 
+        obj.data.userDou = "9999";
+        
+        // 4. 修改显示信息 (可选)
+        obj.data.nickName = "Luis_VIP_2099";
+        
+        // 5. 强制不需要手机号 (防止弹窗)
+        obj.data.needPhoneNumber = false;
+        
+        // --------------------------------------------
+        
+        console.log("皮皮学脚本执行成功：状态已改为 2，时间已延长");
+    } else {
+        console.log("皮皮学脚本执行警告：未找到 obj.data 字段");
+    }
+
+    $done({body: JSON.stringify(obj)});
+
 } catch (e) {
-    var originalObj = {};
+    // 如果脚本报错，打印日志并返回原始数据，防止 App 崩溃
+    console.log("皮皮学脚本错误: " + e);
+    $done({});
 }
-
-// 提取原始 Token，如果没有则使用备用防错
-var userToken = (originalObj.data && originalObj.data.token) ? originalObj.data.token : "eyJhbGciOiJIUzUxMiJ9.e30.fake_token_fallback";
-var userId = (originalObj.data && originalObj.data.sstUserId) ? originalObj.data.sstUserId : "SST88888888";
-
-// 2. 构造强制覆盖的 VIP 数据
-// 重点：使用提取到的 userToken，但强制修改时间、金额和 State
-obj = {
-  "code" : 10000,
-  "message" : "成功",
-  "state" : "ok",
-  "data" : {
-    "serviceUrl" : "https://app.pipixue.com",
-    "sstUserId" : userId,             // 保持真实 ID
-    "nickName" : "Luis_VIP",
-    "province" : null,
-    "language" : null,
-    "country" : null,
-    "totalCoin" : "99999",
-    "learnCoin" : 99999,
-    "vipToTimeStr" : "2099-09-09 09:09:09", // 锁定时间
-    "userDou" : "9999",
-    "needPhoneNumber" : false,
-    "first" : 0,
-    "avatarUrl" : "https://cdn.butingxue.net/app/userheader.png",
-    "city" : null,
-    "homePage" : 0,
-    "ai" : 3,
-    "balance" : "¥9999",
-    "state" : 2,                      // 必须是 2 (VIP状态)
-    "gender" : null,
-    "token" : userToken,              // 必须是真实 Token
-    "uid" : null,
-    "wrongNum" : "0",
-    "shuaCoin" : "0",
-    "qq" : "888888",
-    "followNum" : "0",
-    "phoneNumber" : 1,
-    "vipToTime" : "Wed Sep 09 09:09:09 CST 2099" // 锁定时间
-  }
-};
-
-$done({body: JSON.stringify(obj)});
