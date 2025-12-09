@@ -1,10 +1,12 @@
+
+/*
+
 [rewrite_local]
 # > shuashuati
 ^https?:\/\/api\.butingxue\.net\/ppxue\/user\/app\/login.* url  script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/sst.js
 
 [mitm]
 hostname = api.butingxue.net
-/*
 脚本逻辑：
 1. 获取原始响应体。
 2. 仅修改 state (状态) 和 vipToTime (时间)。
