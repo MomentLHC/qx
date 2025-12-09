@@ -33,7 +33,7 @@ try {
         obj.data.userDou = "9999";
         
         // 4. 修改显示信息 (可选)
-        obj.data.nickName = "Luis_VIP_2099";
+        obj.data.nickName = "Luis";
         
         // 5. 强制不需要手机号 (防止弹窗)
         obj.data.needPhoneNumber = false;
