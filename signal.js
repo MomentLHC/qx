@@ -1,6 +1,5 @@
 /*
- * 2025.12.10
- * Crypto Signal Dashboard - Lite Speed Version
+ * Crypto Signal Dashboard - Modern White UI (Floating Nav)
  * 访问地址: https://signal.hub/
  */
 
@@ -70,7 +69,6 @@ function parseSignalLogic(S, f, originalMsg) {
         position: "-",
         type: "合约",
         author: originalMsg.author_nickname || "未知分析师",
-        // 修改点：时间字段改为 message_time
         time: originalMsg.message_time || originalMsg.created_at, 
         rawSignal: S,
         channel: originalMsg.channel_name || "未知频道"
@@ -167,6 +165,7 @@ function renderDashboard(signals) {
             <div class="card-footer">
                 <div class="time">${s.time}</div>
                 <div class="footer-buttons">
+                    <div class="signal-count">AI识别</div>
                     <div class="details-btn" onclick="alert('${s.rawSignal.replace(/\n/g, '\\n')}')">查看原文 ></div>
                 </div>
             </div>
@@ -181,22 +180,25 @@ function renderDashboard(signals) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <meta name="apple-mobile-web-app-title" content="交易助手">
         <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
 
         <title>交易助手</title>
         <style>
             :root {
-                --bg: #f2f4f7;
+                --bg: #f5f7fa; /* 浅灰背景 */
                 --card-bg: #ffffff;
                 --text-main: #1a1a1a;
                 --text-sub: #8c8c8c;
                 --green: #3fb950;
                 --red: #f85149;
                 --blue: #1f6feb;
-                --nav-bg: #1a1a1f; 
-                --nav-text: #ffffff;
+                
+                /* 修改点：导航栏背景改为白色 */
+                --nav-bg: #ffffff; 
+                --nav-text: #1a1a1a;
+                
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
@@ -207,98 +209,157 @@ function renderDashboard(signals) {
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                 margin: 0; 
                 padding: 0; 
-                padding-bottom: calc(60px + var(--safe-bottom));
+                padding-bottom: calc(90px + var(--safe-bottom)); /* 底部留白增加，防遮挡 */
                 overscroll-behavior-y: none;
                 -webkit-user-select: none;
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
             }
             
+            /* App Header - 白底样式 */
             .app-header { 
                 background: var(--nav-bg); 
                 color: var(--nav-text);
-                padding: calc(10px + var(--safe-top)) 15px 15px 15px; 
+                /* 顶部内边距适配刘海 */
+                padding: calc(10px + var(--safe-top)) 20px 10px 20px; 
                 position: sticky; 
                 top: 0; 
                 z-index: 100; 
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                /* 只有轻微的阴影 */
+                /* box-shadow: 0 1px 0px rgba(0,0,0,0.05); */
             }
             
-            .app-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
-            .app-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 15px; }
+            .app-title { font-size: 24px; font-weight: 800; margin-bottom: 5px; color: #000; }
+            .app-subtitle { font-size: 13px; color: #999; margin-bottom: 20px; font-weight: 500; }
             
+            /* 搜索栏 - 浅灰底 */
             .search-container { display: flex; gap: 10px; margin-bottom: 15px; }
             .search-input { 
                 flex: 1; 
-                background: rgba(255,255,255,0.15); 
+                background: #f0f2f5; 
                 border: none; 
-                padding: 10px 15px; 
-                border-radius: 8px; 
-                font-size: 14px; 
+                padding: 12px 15px; 
+                border-radius: 12px; 
+                font-size: 15px; 
                 outline: none; 
-                color: #fff;
+                color: #333;
+                font-weight: 500;
             }
-            .search-input::placeholder { color: rgba(255,255,255,0.4); }
+            .search-input::placeholder { color: #aaa; }
             
             .icon-btn { 
-                background: rgba(255,255,255,0.15); 
+                background: #f0f2f5; 
                 border: none; 
-                padding: 10px; 
-                border-radius: 8px; 
+                padding: 12px; 
+                border-radius: 12px; 
                 cursor: pointer; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
+                color: #666;
             }
-            .icon-btn svg { width: 20px; height: 20px; fill: #fff; }
+            .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
             
-            .tabs-container { display: flex; gap: 15px; margin-bottom: 0; padding: 5px 0; }
-            .tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,0.6); cursor: pointer; }
-            .tab.active { background: rgba(255,255,255,0.2); color: #fff; font-weight: bold; }
-            .tab-count { background: #fff; color: var(--nav-bg); padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold;}
+            /* Tabs - 胶囊样式优化 */
+            .tabs-container { display: flex; gap: 15px; margin-bottom: 0; padding: 5px 0; border-bottom: 1px solid transparent; }
+            .tab { 
+                padding: 8px 16px; 
+                border-radius: 20px; 
+                font-size: 14px; 
+                color: #666; 
+                cursor: pointer; 
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+            .tab.active { 
+                background: #eef3fd; 
+                color: var(--blue); 
+            }
+            .tab-count { 
+                background: var(--blue); 
+                color: #fff; 
+                padding: 2px 6px; 
+                border-radius: 8px; 
+                font-size: 11px; 
+                font-weight: bold; 
+                margin-left: 4px;
+                vertical-align: 1px;
+            }
             
-            .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+            /* Card 样式优化 */
+            .card { 
+                background: var(--card-bg); 
+                border-radius: 16px; 
+                padding: 20px; 
+                margin: 15px 20px; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+                border: 1px solid rgba(0,0,0,0.02);
+            }
             .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
             
-            /* 修改点：移除了 img 样式，调整 user-info */
             .user-info { display: flex; align-items: center; gap: 0; }
-            .author { font-weight: bold; font-size: 16px; } /* 稍微加大了字体 */
-            .channel-name { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+            .author { font-weight: 700; font-size: 16px; color: #333; }
+            .channel-name { font-size: 12px; color: #999; margin-top: 4px; }
             
-            .direction-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+            .direction-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
             .direction-badge.long { background-color: #e6f4ea; color: var(--green); }
             .direction-badge.short { background-color: #fdeaea; color: var(--red); }
             .direction-badge.spot { background-color: #fff3e0; color: orange; }
             
-            .symbol-title { font-size: 22px; font-weight: 800; margin-bottom: 15px; }
+            .symbol-title { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #000; letter-spacing: -0.5px; }
             
-            .signal-data { background: #f9fafb; padding: 15px; border-radius: 8px; }
+            /* 数据网格 - 更轻盈 */
+            .signal-data { background: #f9fafb; padding: 15px; border-radius: 12px; }
             .data-row { display: flex; justify-content: space-between; margin-bottom: 15px; }
             .data-row:last-child { margin-bottom: 0; }
             .data-item { flex: 1; }
-            .data-item .label { font-size: 12px; color: var(--text-sub); margin-bottom: 5px; }
-            .data-item .value { font-size: 16px; font-weight: 600; font-family: 'Monaco', monospace; }
+            .data-item .label { font-size: 12px; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+            .data-item .value { font-size: 17px; font-weight: 700; font-family: 'Monaco', monospace; color: #333; }
             .value.win { color: var(--green); }
             .value.loss { color: var(--red); }
             
-            .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 12px; color: var(--text-sub); }
+            .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 12px; color: #bbb; font-weight: 500;}
             .footer-buttons { display: flex; gap: 10px; }
-            .signal-count { background: #eef3fd; color: var(--blue); padding: 4px 8px; border-radius: 4px; }
-            .details-btn { background: #1a1a1a; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+            .signal-count { background: #eef3fd; color: var(--blue); padding: 6px 12px; border-radius: 8px; font-weight: 600;}
+            .details-btn { 
+                background: #1a1a1a; 
+                color: white; 
+                padding: 8px 16px; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                font-weight: 600;
+                transition: opacity 0.2s;
+            }
+            .details-btn:active { opacity: 0.8; }
 
+            /* 修改点：悬浮式底部导航 */
             .bottom-nav { 
                 position: fixed; 
-                bottom: 0; 
-                left: 0; 
-                right: 0; 
-                background: #ffffff; 
+                bottom: calc(20px + var(--safe-bottom)); /* 距离底部有间距 */
+                left: 20px; 
+                right: 20px; 
+                height: 60px;
+                background: rgba(255, 255, 255, 0.85); /* 半透明背景 */
+                backdrop-filter: blur(12px); /* 毛玻璃效果 */
+                -webkit-backdrop-filter: blur(12px);
                 display: flex; 
                 justify-content: space-around; 
-                padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
-                border-top: 1px solid #eee; 
+                align-items: center;
+                border-radius: 30px; /* 大圆角 */
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1); /* 柔和阴影 */
                 z-index: 200;
+                border: 1px solid rgba(255,255,255,0.5);
             }
-            .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--text-sub); }
+            .nav-item { 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center;
+                font-size: 10px; 
+                color: #999; 
+                width: 60px;
+                font-weight: 600;
+            }
             .nav-item.active { color: var(--blue); }
             .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; }
             .nav-icon svg { fill: currentColor; }
@@ -316,6 +377,7 @@ function renderDashboard(signals) {
             
             <div class="tabs-container">
                 <div class="tab active">全部 <span class="tab-count">${signals.length}</span></div>
+                <div class="tab">精选</div>
                 <div class="tab">关注</div>
             </div>
         </div>
