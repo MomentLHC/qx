@@ -1,9 +1,10 @@
 /*
- * Crypto Signal Dashboard - Immersive PWA (Script Hub Style)
+ * Crypto Signal Dashboard - Immersive PWA (Avatar Fixed)
  * 访问地址: https://signal.hub/
  */
 
 const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&limit=200";
+const ASSET_HOST = "http://ai.zhixing.icu:5002"; // 图片资源域名
 
 (async () => {
     try {
@@ -59,6 +60,18 @@ function httpGet(url) {
 }
 
 function parseSignalLogic(S, f, originalMsg) {
+    // --- 头像处理逻辑修改开始 ---
+    let finalAvatar = "https://via.placeholder.com/40"; // 默认图
+    
+    if (originalMsg.author_avatar) {
+        // 如果有 author_avatar (例如 /static/icons/...), 拼接完整域名
+        finalAvatar = ASSET_HOST + originalMsg.author_avatar;
+    } else if (originalMsg.author_avatar_original) {
+        // 如果没有，尝试使用 original 字段
+        finalAvatar = originalMsg.author_avatar_original;
+    }
+    // --- 头像处理逻辑修改结束 ---
+
     let T = {
         direction: "unknown",
         symbol: "UNKNOWN",
@@ -69,7 +82,7 @@ function parseSignalLogic(S, f, originalMsg) {
         position: "-",
         type: "合约",
         author: originalMsg.author_nickname || "未知分析师",
-        avatar: originalMsg.author_avatar_original || originalMsg.author_avatar,
+        avatar: finalAvatar, // 使用处理后的头像
         time: originalMsg.created_at,
         rawSignal: S,
         channel: originalMsg.channel_name || "未知频道"
@@ -78,6 +91,7 @@ function parseSignalLogic(S, f, originalMsg) {
     if (!S) S = "";
     if (!f) f = "";
 
+    // 1. 方向判断
     if (/方向[：:]\s*(多单|做多|Long)/i.test(S)) T.direction = "long";
     else if (/方向[：:]\s*(空单|做空|Short)/i.test(S)) T.direction = "short";
     else if (/方向[：:]\s*(现货)/i.test(S)) T.direction = "spot";
@@ -86,24 +100,31 @@ function parseSignalLogic(S, f, originalMsg) {
     else if (f.includes("做空") || f.includes("空单") || f.includes("Short")) T.direction = "short";
     else if (f.includes("现货")) T.direction = "spot";
 
+    // 2. 币种提取
     const D = S.match(/币种[：:]\s*([A-Z0-9]{2,10})/i) || S.match(/([A-Z0-9]{2,10})(\/USDT|USDT)?/i);
     if (D) T.symbol = D[1].toUpperCase();
 
+    // 3. 入场价
     const W = S.match(/入场[价位]*[:：]?\s*([\d.,\-~附近市价]+)/i) || S.match(/价格[:：]?\s*([\d.,\-~]+)/i);
     if (W) T.entryPrice = W[1];
 
+    // 4. 止损
     const $loss = S.match(/止损[:：]?\s*([\d.,]+)/i);
     if ($loss) T.stopLoss = $loss[1];
 
+    // 5. 止盈
     const u = S.match(/止盈[:：]?\s*([\d.,\-~]+)/i) || S.match(/目标[:：]?\s*([\d.,\-~<>]+)/i);
     if (u) T.takeProfit = u[1];
 
+    // 6. 杠杆
     const m = S.match(/杠杆[:：]?\s*([\d]+)\s*倍?/i) || S.match(/([\d]+)\s*倍/i);
     if (m) T.leverage = m[1] + "x";
 
+    // 7. 仓位
     const Y = S.match(/仓位[:：]?\s*([\d]+)%/i);
     if (Y) T.position = Y[1] + "%";
 
+    // 8. 类型判断
     if (f.includes("现货") || T.direction === "spot") T.type = "现货";
     else if ((T.leverage && T.leverage !== "-") || f.includes("合约")) T.type = "合约";
 
@@ -173,11 +194,8 @@ function renderDashboard(signals) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-        
         <meta name="apple-mobile-web-app-capable" content="yes">
-        
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        
         <meta name="apple-mobile-web-app-title" content="交易助手">
         <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
 
@@ -191,14 +209,8 @@ function renderDashboard(signals) {
                 --green: #3fb950;
                 --red: #f85149;
                 --blue: #1f6feb;
-                
-                /* 重点：顶部导航背景色改为深色 
-                   原因：black-translucent 会强制状态栏文字变白。
-                   如果顶部是白色背景，你就看不到时间了。
-                */
                 --nav-bg: #1a1a1f; 
                 --nav-text: #ffffff;
-                
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
@@ -216,9 +228,6 @@ function renderDashboard(signals) {
                 -webkit-tap-highlight-color: transparent;
             }
             
-            /* 顶部导航栏适配 
-               padding-top 加上了 --safe-top，确保内容不被刘海挡住
-            */
             .app-header { 
                 background: var(--nav-bg); 
                 color: var(--nav-text);
@@ -232,7 +241,6 @@ function renderDashboard(signals) {
             .app-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
             .app-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 15px; }
             
-            /* 搜索栏样式微调，适应深色背景 */
             .search-container { display: flex; gap: 10px; margin-bottom: 15px; }
             .search-input { 
                 flex: 1; 
@@ -258,13 +266,11 @@ function renderDashboard(signals) {
             }
             .icon-btn svg { width: 20px; height: 20px; fill: #fff; }
             
-            /* Tabs 样式适配深色头 */
             .tabs-container { display: flex; gap: 15px; margin-bottom: 0; padding: 5px 0; }
             .tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; border-radius: 6px; font-size: 14px; color: rgba(255,255,255,0.6); cursor: pointer; }
             .tab.active { background: rgba(255,255,255,0.2); color: #fff; font-weight: bold; }
             .tab-count { background: #fff; color: var(--nav-bg); padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold;}
             
-            /* 卡片样式保持原样 */
             .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
             .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
             .user-info { display: flex; align-items: center; gap: 10px; }
@@ -293,7 +299,6 @@ function renderDashboard(signals) {
             .signal-count { background: #eef3fd; color: var(--blue); padding: 4px 8px; border-radius: 4px; }
             .details-btn { background: #1a1a1a; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
 
-            /* 底部导航 - 白色背景 */
             .bottom-nav { 
                 position: fixed; 
                 bottom: 0; 
