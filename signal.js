@@ -1,5 +1,5 @@
 /*
- * 更新时间 12.10-21:07
+ * 2025.12.10
  * Crypto Signal Dashboard - Lite Speed Version
  * 访问地址: https://signal.hub/
  */
