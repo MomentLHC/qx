@@ -5,7 +5,7 @@
  */
 
 
-const CSS_URL = https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/ml/signal.css";
+const CSS_URL = "https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/ml/signal.css";
 const JS_URL = "https://raw.githubusercontent.com/MomentLHC/qx/refs/heads/ml/app.js";
 
 const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&limit=200";
