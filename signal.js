@@ -138,7 +138,7 @@ function renderDashboard(signals) {
                 <div class="direction-badge ${dirClass}">${dirLabel}</div>
             </div>
             
-            <div class="symbol-title">${s.symbol}</div>
+            <div class="symbol-title">${s.symbol}/USDT</div>
             
             <div class="signal-data">
                 <div class="data-row">
