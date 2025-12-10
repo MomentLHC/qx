@@ -1,10 +1,9 @@
 /*
- * Crypto Signal Dashboard - Immersive PWA (Avatar Fixed)
+ * Crypto Signal Dashboard - Lite Speed Version
  * 访问地址: https://signal.hub/
  */
 
 const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&limit=200";
-const ASSET_HOST = "http://ai.zhixing.icu:5002"; // 图片资源域名
 
 (async () => {
     try {
@@ -60,15 +59,6 @@ function httpGet(url) {
 }
 
 function parseSignalLogic(S, f, originalMsg) {
-    // --- 头像处理逻辑修改开始 ---
-    let finalAvatar = "http://ai.zhixing.icu:5002/static/icons/03ffd28d036164d897dbd136e7f58ea1.png"; // 默认图
-    
-    if (originalMsg.author_avatar) {
-        // 如果有 author_avatar (例如 /static/icons/...), 拼接完整域名
-        finalAvatar = ASSET_HOST + originalMsg.author_avatar;
-    }
-    // --- 头像处理逻辑修改结束 ---
-
     let T = {
         direction: "unknown",
         symbol: "UNKNOWN",
@@ -79,8 +69,8 @@ function parseSignalLogic(S, f, originalMsg) {
         position: "-",
         type: "合约",
         author: originalMsg.author_nickname || "未知分析师",
-        avatar: finalAvatar, // 使用处理后的头像
-        time: originalMsg.created_at,
+        // 修改点：时间字段改为 message_time
+        time: originalMsg.message_time || originalMsg.created_at, 
         rawSignal: S,
         channel: originalMsg.channel_name || "未知频道"
     };
@@ -140,7 +130,6 @@ function renderDashboard(signals) {
         <div class="card">
             <div class="card-header">
                 <div class="user-info">
-                    <img src="${s.avatar}" alt="avatar" onerror="this.src='https://via.placeholder.com/40'">
                     <div>
                         <div class="author">${s.author}</div>
                         <div class="channel-name">｜ ${s.channel}</div>
@@ -177,7 +166,6 @@ function renderDashboard(signals) {
             <div class="card-footer">
                 <div class="time">${s.time}</div>
                 <div class="footer-buttons">
-                    <div class="signal-count">AI识别</div>
                     <div class="details-btn" onclick="alert('${s.rawSignal.replace(/\n/g, '\\n')}')">查看原文 ></div>
                 </div>
             </div>
@@ -270,10 +258,11 @@ function renderDashboard(signals) {
             
             .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
             .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-            .user-info { display: flex; align-items: center; gap: 10px; }
-            .user-info img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-            .author { font-weight: bold; font-size: 15px; }
-            .channel-name { font-size: 12px; color: var(--text-sub); }
+            
+            /* 修改点：移除了 img 样式，调整 user-info */
+            .user-info { display: flex; align-items: center; gap: 0; }
+            .author { font-weight: bold; font-size: 16px; } /* 稍微加大了字体 */
+            .channel-name { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
             
             .direction-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
             .direction-badge.long { background-color: #e6f4ea; color: var(--green); }
@@ -326,7 +315,6 @@ function renderDashboard(signals) {
             
             <div class="tabs-container">
                 <div class="tab active">全部 <span class="tab-count">${signals.length}</span></div>
-                <div class="tab">精选</div>
                 <div class="tab">关注</div>
             </div>
         </div>
@@ -339,10 +327,6 @@ function renderDashboard(signals) {
             <div class="nav-item active">
                 <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg></div>
                 交易信号
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
-                市场分析
             </div>
             <div class="nav-item">
                 <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
