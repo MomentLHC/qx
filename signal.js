@@ -61,14 +61,11 @@ function httpGet(url) {
 
 function parseSignalLogic(S, f, originalMsg) {
     // --- 头像处理逻辑修改开始 ---
-    let finalAvatar = "https://via.placeholder.com/40"; // 默认图
+    let finalAvatar = "http://ai.zhixing.icu:5002/static/icons/03ffd28d036164d897dbd136e7f58ea1.png"; // 默认图
     
     if (originalMsg.author_avatar) {
         // 如果有 author_avatar (例如 /static/icons/...), 拼接完整域名
         finalAvatar = ASSET_HOST + originalMsg.author_avatar;
-    } else if (originalMsg.author_avatar_original) {
-        // 如果没有，尝试使用 original 字段
-        finalAvatar = originalMsg.author_avatar_original;
     }
     // --- 头像处理逻辑修改结束 ---
 
