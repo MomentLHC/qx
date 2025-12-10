@@ -1,32 +1,42 @@
 /*
- * Crypto Signal Dashboard - Mobile UI
+ * Crypto Signal Dashboard - PWA Ready
  * 访问地址: https://signal.hub/
  */
 
 const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&limit=200";
 
+// --- 主程序入口 ---
 (async () => {
     try {
         const url = $request.url;
 
-        // 如果是根路径，加载主页
+        // 匹配根路径
         if (/^https?:\/\/signal\.hub\/?$/.test(url)) {
+            // 1. 请求 API
             const apiData = await httpGet(API_URL);
             const messages = apiData.messages || [];
+            
+            // 2. 解析所有信号
             const parsedSignals = messages.map(msg => {
                 return parseSignalLogic(msg.signal, msg.message_content, msg);
             });
 
+            // 3. 生成完整 HTML
             const html = renderDashboard(parsedSignals);
 
+            // 4. 返回响应
             $done({
                 response: {
                     status: 200,
-                    headers: { "Content-Type": "text/html;charset=UTF-8" },
+                    headers: { 
+                        "Content-Type": "text/html;charset=UTF-8",
+                        "Cache-Control": "no-store" // 防止缓存导致看不到最新数据
+                    },
                     body: html
                 }
             });
         } else {
+            // 404 处理
             $done({ response: { status: 404, body: "Not Found" } });
         }
 
@@ -35,12 +45,13 @@ const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&li
             response: {
                 status: 500,
                 headers: { "Content-Type": "text/html;charset=UTF-8" },
-                body: `<h1>Error</h1><p>${err}</p >`
+                body: `<div style="padding:20px"><h1>Error</h1><p>${err}</p></div>`
             }
         });
     }
 })();
 
+// --- 网络请求辅助函数 ---
 function httpGet(url) {
     return new Promise((resolve, reject) => {
         $httpClient.get(url, (error, response, data) => {
@@ -56,6 +67,7 @@ function httpGet(url) {
     });
 }
 
+// --- 信号解析核心逻辑 ---
 function parseSignalLogic(S, f, originalMsg) {
     let T = {
         direction: "unknown",
@@ -66,16 +78,17 @@ function parseSignalLogic(S, f, originalMsg) {
         leverage: "-",
         position: "-",
         type: "合约",
-        author: originalMsg.author_nickname,
+        author: originalMsg.author_nickname || "未知分析师",
         avatar: originalMsg.author_avatar_original || originalMsg.author_avatar,
         time: originalMsg.created_at,
         rawSignal: S,
-        channel: originalMsg.channel_name // Added channel name
+        channel: originalMsg.channel_name || "未知频道"
     };
 
     if (!S) S = "";
     if (!f) f = "";
 
+    // 1. 方向判断
     if (/方向[：:]\s*(多单|做多|Long)/i.test(S)) T.direction = "long";
     else if (/方向[：:]\s*(空单|做空|Short)/i.test(S)) T.direction = "short";
     else if (/方向[：:]\s*(现货)/i.test(S)) T.direction = "spot";
@@ -84,30 +97,38 @@ function parseSignalLogic(S, f, originalMsg) {
     else if (f.includes("做空") || f.includes("空单") || f.includes("Short")) T.direction = "short";
     else if (f.includes("现货")) T.direction = "spot";
 
+    // 2. 币种提取
     const D = S.match(/币种[：:]\s*([A-Z0-9]{2,10})/i) || S.match(/([A-Z0-9]{2,10})(\/USDT|USDT)?/i);
     if (D) T.symbol = D[1].toUpperCase();
 
+    // 3. 入场价
     const W = S.match(/入场[价位]*[:：]?\s*([\d.,\-~附近市价]+)/i) || S.match(/价格[:：]?\s*([\d.,\-~]+)/i);
     if (W) T.entryPrice = W[1];
 
+    // 4. 止损
     const $loss = S.match(/止损[:：]?\s*([\d.,]+)/i);
     if ($loss) T.stopLoss = $loss[1];
 
+    // 5. 止盈
     const u = S.match(/止盈[:：]?\s*([\d.,\-~]+)/i) || S.match(/目标[:：]?\s*([\d.,\-~<>]+)/i);
     if (u) T.takeProfit = u[1];
 
+    // 6. 杠杆
     const m = S.match(/杠杆[:：]?\s*([\d]+)\s*倍?/i) || S.match(/([\d]+)\s*倍/i);
     if (m) T.leverage = m[1] + "x";
 
+    // 7. 仓位
     const Y = S.match(/仓位[:：]?\s*([\d]+)%/i);
     if (Y) T.position = Y[1] + "%";
 
+    // 8. 交易类型
     if (f.includes("现货") || T.direction === "spot") T.type = "现货";
     else if ((T.leverage && T.leverage !== "-") || f.includes("合约")) T.type = "合约";
 
     return T;
 }
 
+// --- 页面渲染函数 (包含 PWA 配置) ---
 function renderDashboard(signals) {
     const cardsHtml = signals.map(s => {
         let dirLabel = "观望";
@@ -120,7 +141,7 @@ function renderDashboard(signals) {
         <div class="card">
             <div class="card-header">
                 <div class="user-info">
-                    < img src="${s.avatar}" alt="avatar" onerror="this.src='https://via.placeholder.com/40'">
+                    <img src="${s.avatar}" alt="avatar" onerror="this.src='https://via.placeholder.com/40'">
                     <div>
                         <div class="author">${s.author}</div>
                         <div class="channel-name">｜ ${s.channel}</div>
@@ -148,15 +169,17 @@ function renderDashboard(signals) {
                         <div class="value loss">${s.stopLoss}</div>
                     </div>
                      <div class="data-item">
-                        </div>
+                         <div class="label">杠杆/仓位</div>
+                        <div class="value">${s.leverage} / ${s.position}</div>
+                    </div>
                 </div>
             </div>
 
             <div class="card-footer">
                 <div class="time">${s.time}</div>
                 <div class="footer-buttons">
-                    <div class="signal-count">3条信号</div>
-                    <div class="details-btn">查看详情 ></div>
+                    <div class="signal-count">AI识别</div>
+                    <div class="details-btn" onclick="alert('${s.rawSignal.replace(/\n/g, '\\n')}')">查看原文 ></div>
                 </div>
             </div>
         </div>
@@ -168,7 +191,12 @@ function renderDashboard(signals) {
     <html lang="zh-CN">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="交易助手">
+        <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
+
         <title>交易助手</title>
         <style>
             :root {
@@ -180,27 +208,49 @@ function renderDashboard(signals) {
                 --red: #f85149;
                 --blue: #1f6feb;
                 --nav-bg: #ffffff;
+                --safe-top: env(safe-area-inset-top);
+                --safe-bottom: env(safe-area-inset-bottom);
             }
-            body { background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; padding-bottom: 60px; }
+            body { 
+                background: var(--bg); 
+                color: var(--text-main); 
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                padding-bottom: calc(60px + var(--safe-bottom)); 
+                
+                /* 禁止iOS回弹露底色，禁止选择文本 */
+                overscroll-behavior-y: none;
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
             
-            /* Header */
-            .app-header { background: var(--nav-bg); padding: 15px; position: sticky; top: 0; z-index: 10; }
+            /* 顶部导航栏 - 适配刘海屏 */
+            .app-header { 
+                background: var(--nav-bg); 
+                padding: calc(10px + var(--safe-top)) 15px 10px 15px; 
+                position: sticky; 
+                top: 0; 
+                z-index: 100; 
+                box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            }
             .app-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
             .app-subtitle { font-size: 12px; color: var(--text-sub); margin-bottom: 15px; }
             
-            /* Search Bar */
+            /* 搜索栏 */
             .search-container { display: flex; gap: 10px; margin-bottom: 15px; }
-            .search-input { flex: 1; background: #f0f2f5; border: none; padding: 10px 15px; border-radius: 8px; font-size: 14px; }
+            .search-input { flex: 1; background: #f0f2f5; border: none; padding: 10px 15px; border-radius: 8px; font-size: 14px; outline: none; }
             .icon-btn { background: #f0f2f5; border: none; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
             .icon-btn svg { width: 20px; height: 20px; fill: var(--text-sub); }
             
-            /* Tabs */
-            .tabs-container { display: flex; gap: 15px; margin-bottom: 15px; background: var(--nav-bg); padding: 5px; border-radius: 8px; }
+            /* Tab 栏 */
+            .tabs-container { display: flex; gap: 15px; margin-bottom: 5px; background: var(--nav-bg); padding: 5px 0; }
             .tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; border-radius: 6px; font-size: 14px; color: var(--text-sub); cursor: pointer; }
             .tab.active { background: #eef3fd; color: var(--blue); font-weight: bold; }
             .tab-count { background: #eef3fd; color: var(--blue); padding: 2px 6px; border-radius: 10px; font-size: 12px; }
             
-            /* Card Style */
+            /* 卡片样式 */
             .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
             
             .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
@@ -216,7 +266,7 @@ function renderDashboard(signals) {
             
             .symbol-title { font-size: 22px; font-weight: 800; margin-bottom: 15px; }
             
-            /* Signal Data Grid */
+            /* 信号数据网格 */
             .signal-data { background: #f9fafb; padding: 15px; border-radius: 8px; }
             .data-row { display: flex; justify-content: space-between; margin-bottom: 15px; }
             .data-row:last-child { margin-bottom: 0; }
@@ -226,14 +276,24 @@ function renderDashboard(signals) {
             .value.win { color: var(--green); }
             .value.loss { color: var(--red); }
             
-            /* Card Footer */
             .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 12px; color: var(--text-sub); }
             .footer-buttons { display: flex; gap: 10px; }
             .signal-count { background: #eef3fd; color: var(--blue); padding: 4px 8px; border-radius: 4px; }
             .details-btn { background: #1a1a1a; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
 
-            /* Bottom Navigation */
-            .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eee; }
+            /* 底部导航 - 适配底部安全区 */
+            .bottom-nav { 
+                position: fixed; 
+                bottom: 0; 
+                left: 0; 
+                right: 0; 
+                background: var(--nav-bg); 
+                display: flex; 
+                justify-content: space-around; 
+                padding: 10px 0 calc(10px + var(--safe-bottom)) 0;
+                border-top: 1px solid #eee; 
+                z-index: 200;
+            }
             .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--text-sub); }
             .nav-item.active { color: var(--blue); }
             .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; }
@@ -252,9 +312,9 @@ function renderDashboard(signals) {
             </div>
             
             <div class="tabs-container">
-                <div class="tab active">Is 122 <span class="tab-count">122</span></div>
-                <div class="tab">★ 0</div>
-                <div class="tab">○ 122</div>
+                <div class="tab active">全部 <span class="tab-count">${signals.length}</span></div>
+                <div class="tab">精选</div>
+                <div class="tab">关注</div>
             </div>
         </div>
 
