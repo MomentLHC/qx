@@ -1,16 +1,14 @@
 /*
- * Crypto Signal Dashboard - CSR Version (CF Bypass Ready)
- * Updates:
- * 1. 时间格式化：GMT -> YYYY-MM-DD HH:mm:ss
- * 2. 交互增强：点击数据区域看识别结果，新增AI分析按钮，查看原文看原始内容
+ * Crypto Signal Dashboard - Final Fix (UI & Timezone)
+ * 1. 修复顶部黑边：设置 html 背景色
+ * 2. 修复时间问题：强制使用 UTC 时间，不加 8 小时
+ * 3. 保持白色 UI 和交互功能
  */
 
 const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
 
 (async () => {
-    // Surge 脚本只负责返回 HTML 骨架
     const html = renderPageSkeleton();
-
     $done({
         response: {
             status: 200,
@@ -23,7 +21,6 @@ const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=s
     });
 })();
 
-// --- 生成 HTML 骨架 ---
 function renderPageSkeleton() {
     return `
     <!DOCTYPE html>
@@ -31,47 +28,65 @@ function renderPageSkeleton() {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="theme-color" content="#ffffff">
+        
+        <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
         <title>交易信号</title>
         <style>
             :root {
-                --bg: #f5f7fa; 
+                --page-bg: #f5f7fa;   
+                --header-bg: #ffffff;
                 --card-bg: #ffffff;
                 --text-main: #1a1a1a;
                 --text-sub: #8c8c8c;
                 --green: #3fb950;
                 --red: #f85149;
                 --blue: #1f6feb;
-                --purple: #7048e8; /* 新增 AI 按钮颜色 */
-                --nav-bg: #ffffff; 
-                --nav-text: #1a1a1a;
+                --purple: #7048e8;
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
             
+            /* 【修复1】html背景设为白色，彻底解决刘海屏黑边 */
+            html {
+                background-color: var(--header-bg);
+            }
+            
             body { 
-                background: var(--bg); 
+                background-color: var(--page-bg); 
                 color: var(--text-main); 
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-                margin: 0; padding: 0; 
+                margin: 0; 
+                padding: 0; 
                 padding-bottom: calc(20px + var(--safe-bottom));
                 overscroll-behavior-y: none;
-                -webkit-user-select: none; user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
                 -webkit-tap-highlight-color: transparent;
+                /* 确保 body 撑满，防止露底 */
+                min-height: 100vh;
             }
             
             /* 顶部标题栏 */
             .app-header { 
-                background: var(--nav-bg); color: var(--nav-text);
-                padding: calc(15px + var(--safe-top)) 20px 15px 20px; 
-                position: sticky; top: 0; z-index: 100; 
-                border-bottom: 1px solid rgba(0,0,0,0.05);
+                background: var(--header-bg); 
+                color: var(--text-main);
+                padding: calc(12px + var(--safe-top)) 20px 12px 20px; 
+                position: sticky; 
+                top: 0; 
+                z-index: 100; 
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }
-            .app-title { font-size: 22px; font-weight: 800; margin: 0; color: #000; letter-spacing: -0.5px;}
+            
+            .app-title { 
+                font-size: 22px; font-weight: 800; margin: 0; color: #000; letter-spacing: -0.5px;
+            }
             
             /* 状态提示区域 */
-            #status-bar { padding: 20px; text-align: center; }
+            #status-bar { padding: 40px 20px; text-align: center; }
             
             /* 错误提示条 */
             .error-banner {
@@ -89,9 +104,8 @@ function renderPageSkeleton() {
 
             /* 加载动画 */
             .loader {
-                border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--blue);
-                width: 24px; height: 24px; margin: 0 auto 10px auto;
-                animation: spin 1s linear infinite;
+                border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--blue);
+                width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px auto;
             }
             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             
@@ -113,13 +127,11 @@ function renderPageSkeleton() {
             
             .symbol-title { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #000; letter-spacing: -0.5px; }
             
-            /* 数据区域 - 可点击效果 */
             .signal-data { 
                 background: #f9fafb; padding: 15px; border-radius: 12px; 
-                cursor: pointer; /* 提示可点击 */
-                transition: background-color 0.2s;
+                cursor: pointer; transition: background-color 0.2s;
             }
-            .signal-data:active { background: #eef0f5; } /* 点击反馈 */
+            .signal-data:active { background: #eef0f5; }
 
             .data-row { display: flex; justify-content: space-between; margin-bottom: 15px; }
             .data-row:last-child { margin-bottom: 0; }
@@ -138,11 +150,7 @@ function renderPageSkeleton() {
                 transition: opacity 0.2s;
             }
             .details-btn:active { opacity: 0.8; }
-            
-            /* AI 按钮特殊样式 */
-            .ai-btn {
-                background: #f3f0ff; color: var(--purple);
-            }
+            .ai-btn { background: #f3f0ff; color: var(--purple); }
         </style>
     </head>
     <body>
@@ -201,30 +209,25 @@ function renderPageSkeleton() {
                 }
             }
 
-            // --- 时间格式化辅助函数 ---
+            // 【修复2】时间格式化：强制使用 UTC 时间，不转换本地时区
             function formatDate(isoString) {
                 if (!isoString) return '';
                 const date = new Date(isoString);
-                if (isNaN(date.getTime())) return isoString; // 如果解析失败返回原字符串
+                if (isNaN(date.getTime())) return isoString;
 
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                const seconds = String(date.getSeconds()).padStart(2, '0');
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                const hours = String(date.getUTCHours()).padStart(2, '0'); // 使用 getUTC 防止自动+8
+                const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(date.getUTCSeconds()).padStart(2, '0');
 
                 return \`\${year}-\${month}-\${day} \${hours}:\${minutes}:\${seconds}\`;
             }
 
-            // --- 文本安全转义 (防止 Alert 报错) ---
             function escapeText(text) {
                 if (!text) return '';
-                // 转义反斜杠、单引号、换行符
-                return text.replace(/\\\\/g, '\\\\\\\\')
-                           .replace(/'/g, "\\\\'")
-                           .replace(/\\n/g, '\\\\n')
-                           .replace(/\\r/g, '');
+                return text.replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'").replace(/\\n/g, '\\\\n').replace(/\\r/g, '');
             }
 
             function parseSignalLogic(S, f, originalMsg) {
@@ -238,7 +241,6 @@ function renderPageSkeleton() {
                     position: "-",
                     type: "合约",
                     author: originalMsg.author_nickname || "未知分析师",
-                    // 修改1：使用 formatDate 格式化 created_at
                     time: formatDate(originalMsg.created_at), 
                     rawSignal: S || "",
                     message_content: originalMsg.message_content || "",
@@ -289,7 +291,6 @@ function renderPageSkeleton() {
                     if (s.direction === 'short') { dirLabel = '↓ 做空'; dirClass = 'short'; }
                     if (s.direction === 'spot') { dirLabel = '现货'; dirClass = 'spot'; }
 
-                    // 预处理用于 Alert 的文本
                     const safeRaw = escapeText(s.rawSignal);
                     const safeAnalysis = escapeText(s.analysis);
                     const safeContent = escapeText(s.message_content);
