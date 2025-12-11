@@ -1,216 +1,36 @@
 /*
- * Crypto Signal Dashboard - Minimalist & Robust
- * 1. 移除搜索/Tab/底部导航/AI标签
- * 2. 强健的错误处理，超时也能进入页面
+ * Crypto Signal Dashboard - Client-Side Rendering (CF Bypass Ready)
+ * 1. 移除搜索/Tab/底部导航/AI标签/头像
+ * 2. 架构改为前端请求：秒开页面，进页面后再加载数据
+ * 3. 错误处理：请求失败会在页面内显示红色提示，不会白屏
  */
+
+// 页面拦截路径配置建议：
+// 为了完美通过 Cloudflare，建议将 Surge 脚本拦截的 URL 改为 API 同域名的子路径
+// 例如 pattern: ^https?:\/\/kol\.zhixing\.icu\/dashboard
+// 访问时使用: https://kol.zhixing.icu/dashboard
 
 const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=200";
 
 (async () => {
-    // 初始化变量
-    let messages = [];
-    let errorMsg = null;
+    // Surge 脚本只负责返回 HTML 骨架，不做任何网络请求
+    // 这样保证永远不会超时，永远能进入页面
+    const html = renderPageSkeleton();
 
-    try {
-        const url = $request.url;
-
-        if (/^https?:\/\/signal\.hub\/?$/.test(url)) {
-            // 尝试请求数据
-            try {
-                const apiData = await httpGet(API_URL);
-                messages = apiData.messages || [];
-            } catch (e) {
-                // 捕获请求错误（超时、网络断开等），但不抛出，而是记录错误
-                console.log(`[Signal Hub] API Error: ${e}`);
-                errorMsg = e; 
-            }
-
-            // 解析数据（如果有数据的话）
-            const parsedSignals = messages.map(msg => {
-                return parseSignalLogic(msg.signal, msg.message_content, msg);
-            });
-
-            // 渲染页面，传入数据和错误信息
-            const html = renderDashboard(parsedSignals, errorMsg);
-
-            // 无论成功失败，总是返回 200 和 HTML
-            $done({
-                response: {
-                    status: 200,
-                    headers: { 
-                        "Content-Type": "text/html;charset=UTF-8",
-                        "Cache-Control": "no-store"
-                    },
-                    body: html
-                }
-            });
-        } else {
-            $done({ response: { status: 404, body: "Not Found" } });
+    $done({
+        response: {
+            status: 200,
+            headers: { 
+                "Content-Type": "text/html;charset=UTF-8",
+                "Cache-Control": "no-store"
+            },
+            body: html
         }
-
-    } catch (criticalErr) {
-        // 极端的脚本内部错误兜底
-        $done({
-            response: {
-                status: 200, // 依然尝试返回200，显示错误UI
-                headers: { "Content-Type": "text/html;charset=UTF-8" },
-                body: renderCriticalError(criticalErr)
-            }
-        });
-    }
+    });
 })();
 
-function httpGet(url) {
-    return new Promise((resolve, reject) => {
-        $httpClient.get({url: url, timeout: 5}, (error, response, data) => { // 设置5秒超时，避免长时间白屏
-            if (error) {
-                reject(error);
-            } else {
-                try {
-                    resolve(JSON.parse(data));
-                } catch (e) {
-                    reject("JSON Parse Error: " + e);
-                }
-            }
-        });
-    });
-}
-
-function parseSignalLogic(S, f, originalMsg) {
-    let T = {
-        direction: "unknown",
-        symbol: "UNKNOWN",
-        entryPrice: "-",
-        stopLoss: "-",
-        takeProfit: "-",
-        leverage: "-",
-        position: "-",
-        type: "合约",
-        author: originalMsg.author_nickname || "未知分析师",
-        time: originalMsg.message_time || originalMsg.created_at, 
-        rawSignal: S,
-        channel: originalMsg.channel_name || "未知频道"
-    };
-
-    if (!S) S = "";
-    if (!f) f = "";
-
-    // 1. 方向判断
-    if (/方向[：:]\s*(多单|做多|Long)/i.test(S)) T.direction = "long";
-    else if (/方向[：:]\s*(空单|做空|Short)/i.test(S)) T.direction = "short";
-    else if (/方向[：:]\s*(现货)/i.test(S)) T.direction = "spot";
-    else if (/方向[：:]\s*(平仓)/i.test(S)) T.direction = "close";
-    else if (f.includes("做多") || f.includes("多单") || f.includes("Long")) T.direction = "long";
-    else if (f.includes("做空") || f.includes("空单") || f.includes("Short")) T.direction = "short";
-    else if (f.includes("现货")) T.direction = "spot";
-
-    // 2. 币种提取
-    const D = S.match(/币种[：:]\s*([A-Z0-9]{2,10})/i) || S.match(/([A-Z0-9]{2,10})(\/USDT|USDT)?/i);
-    if (D) T.symbol = D[1].toUpperCase();
-
-    // 3. 入场价
-    const W = S.match(/入场[价位]*[:：]?\s*([\d.,\-~附近市价]+)/i) || S.match(/价格[:：]?\s*([\d.,\-~]+)/i);
-    if (W) T.entryPrice = W[1];
-
-    // 4. 止损
-    const $loss = S.match(/止损[:：]?\s*([\d.,]+)/i);
-    if ($loss) T.stopLoss = $loss[1];
-
-    // 5. 止盈
-    const u = S.match(/止盈[:：]?\s*([\d.,\-~]+)/i) || S.match(/目标[:：]?\s*([\d.,\-~<>]+)/i);
-    if (u) T.takeProfit = u[1];
-
-    // 6. 杠杆
-    const m = S.match(/杠杆[:：]?\s*([\d]+)\s*倍?/i) || S.match(/([\d]+)\s*倍/i);
-    if (m) T.leverage = m[1] + "x";
-
-    // 7. 仓位
-    const Y = S.match(/仓位[:：]?\s*([\d]+)%/i);
-    if (Y) T.position = Y[1] + "%";
-
-    // 8. 类型判断
-    if (f.includes("现货") || T.direction === "spot") T.type = "现货";
-    else if ((T.leverage && T.leverage !== "-") || f.includes("合约")) T.type = "合约";
-
-    return T;
-}
-
-function renderDashboard(signals, errorMsg) {
-    // 1. 生成错误提示 HTML (如果有错误)
-    let errorHtml = '';
-    if (errorMsg) {
-        errorHtml = `
-        <div class="error-banner">
-            <div class="error-icon">⚠️</div>
-            <div class="error-content">
-                <div class="error-title">数据更新失败</div>
-                <div class="error-desc">${errorMsg}</div>
-            </div>
-            <button class="retry-btn" onclick="window.location.reload()">重试</button>
-        </div>`;
-    }
-
-    // 2. 生成空状态提示 (如果没错误但也没数据)
-    let emptyHtml = '';
-    if (signals.length === 0 && !errorMsg) {
-        emptyHtml = `<div style="text-align:center; padding: 40px; color: #999;">暂无交易信号</div>`;
-    }
-
-    // 3. 生成卡片 HTML
-    const cardsHtml = signals.map(s => {
-        let dirLabel = "观望";
-        let dirClass = "";
-        if (s.direction === 'long') { dirLabel = '↑ 做多'; dirClass = 'long'; }
-        if (s.direction === 'short') { dirLabel = '↓ 做空'; dirClass = 'short'; }
-        if (s.direction === 'spot') { dirLabel = '现货'; dirClass = 'spot'; }
-
-        return `
-        <div class="card">
-            <div class="card-header">
-                <div class="user-info">
-                    <div>
-                        <div class="author">${s.author}</div>
-                        <div class="channel-name">｜ ${s.channel}</div>
-                    </div>
-                </div>
-                <div class="direction-badge ${dirClass}">${dirLabel}</div>
-            </div>
-            
-            <div class="symbol-title">${s.symbol}</div>
-            
-            <div class="signal-data">
-                <div class="data-row">
-                    <div class="data-item">
-                        <div class="label">入场</div>
-                        <div class="value">${s.entryPrice}</div>
-                    </div>
-                    <div class="data-item">
-                        <div class="label">止盈</div>
-                        <div class="value win">${s.takeProfit}</div>
-                    </div>
-                </div>
-                <div class="data-row">
-                    <div class="data-item">
-                        <div class="label">止损</div>
-                        <div class="value loss">${s.stopLoss}</div>
-                    </div>
-                     <div class="data-item">
-                         <div class="label">杠杆/仓位</div>
-                        <div class="value">${s.leverage} / ${s.position}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-footer">
-                <div class="time">${s.time}</div>
-                <div class="footer-buttons">
-                    <div class="details-btn" onclick="alert('${s.rawSignal.replace(/\n/g, '\\n')}')">查看原文 ></div>
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
-
+// --- 生成 HTML 骨架 (包含前端 JS 逻辑) ---
+function renderPageSkeleton() {
     return `
     <!DOCTYPE html>
     <html lang="zh-CN">
@@ -219,10 +39,7 @@ function renderDashboard(signals, errorMsg) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="apple-mobile-web-app-title" content="交易助手">
-        <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
-
-        <title>交易助手</title>
+        <title>交易信号</title>
         <style>
             :root {
                 --bg: #f5f7fa; 
@@ -244,7 +61,6 @@ function renderDashboard(signals, errorMsg) {
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                 margin: 0; 
                 padding: 0; 
-                /* 底部不再需要给导航栏留位置了，只需适配安全区 */
                 padding-bottom: calc(20px + var(--safe-bottom));
                 overscroll-behavior-y: none;
                 -webkit-user-select: none;
@@ -252,23 +68,23 @@ function renderDashboard(signals, errorMsg) {
                 -webkit-tap-highlight-color: transparent;
             }
             
-            /* 极简 Header */
+            /* 顶部标题栏 */
             .app-header { 
                 background: var(--nav-bg); 
                 color: var(--nav-text);
-                padding: calc(10px + var(--safe-top)) 20px 10px 20px; 
+                padding: calc(15px + var(--safe-top)) 20px 15px 20px; 
                 position: sticky; 
                 top: 0; 
                 z-index: 100; 
-                /* 移除了 Tab 和 搜索栏，给一点下边距 */
-                margin-bottom: 10px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+                border-bottom: 1px solid rgba(0,0,0,0.05);
             }
             
-            .app-title { font-size: 24px; font-weight: 800; margin-bottom: 5px; color: #000; }
-            .app-subtitle { font-size: 13px; color: #999; margin-bottom: 0; font-weight: 500; }
+            .app-title { font-size: 22px; font-weight: 800; margin: 0; color: #000; letter-spacing: -0.5px;}
             
-            /* 错误提示条样式 */
+            /* 状态提示区域 */
+            #status-bar { padding: 20px; text-align: center; }
+            
+            /* 错误提示条 */
             .error-banner {
                 margin: 15px 20px;
                 background: #fff2f0;
@@ -278,6 +94,7 @@ function renderDashboard(signals, errorMsg) {
                 display: flex;
                 align-items: center;
                 gap: 12px;
+                text-align: left;
             }
             .error-icon { font-size: 20px; }
             .error-content { flex: 1; }
@@ -291,8 +108,22 @@ function renderDashboard(signals, errorMsg) {
                 border-radius: 6px;
                 font-size: 12px;
                 cursor: pointer;
+                font-weight: 600;
             }
 
+            /* 加载动画 */
+            .loader {
+                border: 3px solid #f3f3f3;
+                border-radius: 50%;
+                border-top: 3px solid var(--blue);
+                width: 24px;
+                height: 24px;
+                -webkit-animation: spin 1s linear infinite; /* Safari */
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px auto;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            
             /* Card 样式 */
             .card { 
                 background: var(--card-bg); 
@@ -342,27 +173,177 @@ function renderDashboard(signals, errorMsg) {
     <body>
         <div class="app-header">
             <div class="app-title">交易信号</div>
-            <div class="app-subtitle">所有频道的交易信号汇总</div>
         </div>
 
-        <div id="app">
-            ${errorHtml}
-            ${emptyHtml}
-            ${cardsHtml}
+        <div id="status-bar">
+            <div class="loader"></div>
+            <div style="color:#999; font-size:13px;">正在连接信号源...</div>
         </div>
+
+        <div id="content-area"></div>
+
+        <script>
+            const API_URL = "${API_URL}";
+
+            // 页面加载完成后立即执行
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchData();
+            });
+
+            async function fetchData() {
+                const statusEl = document.getElementById('status-bar');
+                const contentEl = document.getElementById('content-area');
+                
+                // 显示加载状态
+                statusEl.innerHTML = '<div class="loader"></div><div style="color:#999; font-size:13px;">正在获取数据...</div>';
+                statusEl.style.display = 'block';
+
+                try {
+                    // 使用浏览器原生 Fetch，可继承 Cloudflare Cookie
+                    const response = await fetch(API_URL);
+                    
+                    if (!response.ok) {
+                        throw new Error("HTTP Status: " + response.status);
+                    }
+                    
+                    const data = await response.json();
+                    const messages = data.messages || [];
+
+                    if (messages.length === 0) {
+                        statusEl.innerHTML = '<div style="color:#999; padding:20px;">暂无信号数据</div>';
+                    } else {
+                        // 隐藏状态栏，显示内容
+                        statusEl.style.display = 'none';
+                        const parsed = messages.map(msg => parseSignalLogic(msg.signal, msg.message_content, msg));
+                        contentEl.innerHTML = renderCards(parsed);
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    // 显示友好的错误提示，并提供重试按钮
+                    statusEl.innerHTML = \`
+                        <div class="error-banner">
+                            <div class="error-icon">⚠️</div>
+                            <div class="error-content">
+                                <div class="error-title">请求失败</div>
+                                <div class="error-desc">\${err.message || err}</div>
+                            </div>
+                            <button class="retry-btn" onclick="fetchData()">重试</button>
+                        </div>
+                    \`;
+                }
+            }
+
+            // --- 核心解析逻辑 (移植到前端) ---
+            function parseSignalLogic(S, f, originalMsg) {
+                let T = {
+                    direction: "unknown",
+                    symbol: "UNKNOWN",
+                    entryPrice: "-",
+                    stopLoss: "-",
+                    takeProfit: "-",
+                    leverage: "-",
+                    position: "-",
+                    type: "合约",
+                    author: originalMsg.author_nickname || "未知分析师",
+                    time: originalMsg.message_time || originalMsg.created_at, 
+                    rawSignal: S || "",
+                    channel: originalMsg.channel_name || "未知频道"
+                };
+
+                if (!S) S = "";
+                if (!f) f = "";
+
+                if (/方向[：:]\\s*(多单|做多|Long)/i.test(S)) T.direction = "long";
+                else if (/方向[：:]\\s*(空单|做空|Short)/i.test(S)) T.direction = "short";
+                else if (/方向[：:]\\s*(现货)/i.test(S)) T.direction = "spot";
+                else if (/方向[：:]\\s*(平仓)/i.test(S)) T.direction = "close";
+                else if (f.includes("做多") || f.includes("多单") || f.includes("Long")) T.direction = "long";
+                else if (f.includes("做空") || f.includes("空单") || f.includes("Short")) T.direction = "short";
+                else if (f.includes("现货")) T.direction = "spot";
+
+                const D = S.match(/币种[：:]\\s*([A-Z0-9]{2,10})/i) || S.match(/([A-Z0-9]{2,10})(\\/USDT|USDT)?/i);
+                if (D) T.symbol = D[1].toUpperCase();
+
+                const W = S.match(/入场[价位]*[:：]?\\s*([\\d.,\\-~附近市价]+)/i) || S.match(/价格[:：]?\\s*([\\d.,\\-~]+)/i);
+                if (W) T.entryPrice = W[1];
+
+                const loss = S.match(/止损[:：]?\\s*([\\d.,]+)/i);
+                if (loss) T.stopLoss = loss[1];
+
+                const u = S.match(/止盈[:：]?\\s*([\\d.,\\-~]+)/i) || S.match(/目标[:：]?\\s*([\\d.,\\-~<>]+)/i);
+                if (u) T.takeProfit = u[1];
+
+                const m = S.match(/杠杆[:：]?\\s*([\\d]+)\\s*倍?/i) || S.match(/([\\d]+)\\s*倍/i);
+                if (m) T.leverage = m[1] + "x";
+
+                const Y = S.match(/仓位[:：]?\\s*([\\d]+)%/i);
+                if (Y) T.position = Y[1] + "%";
+
+                if (f.includes("现货") || T.direction === "spot") T.type = "现货";
+                else if ((T.leverage && T.leverage !== "-") || f.includes("合约")) T.type = "合约";
+
+                return T;
+            }
+
+            // --- 渲染卡片 HTML ---
+            function renderCards(signals) {
+                return signals.map(s => {
+                    let dirLabel = "观望";
+                    let dirClass = "";
+                    if (s.direction === 'long') { dirLabel = '↑ 做多'; dirClass = 'long'; }
+                    if (s.direction === 'short') { dirLabel = '↓ 做空'; dirClass = 'short'; }
+                    if (s.direction === 'spot') { dirLabel = '现货'; dirClass = 'spot'; }
+
+                    return \`
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="user-info">
+                                <div>
+                                    <div class="author">\${s.author}</div>
+                                    <div class="channel-name">｜ \${s.channel}</div>
+                                </div>
+                            </div>
+                            <div class="direction-badge \${dirClass}">\${dirLabel}</div>
+                        </div>
+                        
+                        <div class="symbol-title">\${s.symbol}</div>
+                        
+                        <div class="signal-data">
+                            <div class="data-row">
+                                <div class="data-item">
+                                    <div class="label">入场</div>
+                                    <div class="value">\${s.entryPrice}</div>
+                                </div>
+                                <div class="data-item">
+                                    <div class="label">止盈</div>
+                                    <div class="value win">\${s.takeProfit}</div>
+                                </div>
+                            </div>
+                            <div class="data-row">
+                                <div class="data-item">
+                                    <div class="label">止损</div>
+                                    <div class="value loss">\${s.stopLoss}</div>
+                                </div>
+                                 <div class="data-item">
+                                     <div class="label">杠杆/仓位</div>
+                                    <div class="value">\${s.leverage} / \${s.position}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="time">\${s.time}</div>
+                            <div class="footer-buttons">
+                                <div class="details-btn" onclick="alert(\\\'\${s.rawSignal.replace(/\\n/g, '\\\\n')}\\\')">查看原文 ></div>
+                            </div>
+                        </div>
+                    </div>
+                    \`;
+                }).join('');
+            }
+        </script>
     </body>
     </html>
     `;
-}
-
-// 极端的脚本错误兜底页面
-function renderCriticalError(err) {
-    return `
-    <html>
-    <body style="padding:40px; font-family:sans-serif; text-align:center;">
-        <h2 style="color:#f00">Script Error</h2>
-        <p>${err}</p>
-        <button onclick="window.location.reload()" style="padding:10px 20px;">Reload</button>
-    </body>
-    </html>`;
 }
