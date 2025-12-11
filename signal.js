@@ -1,14 +1,13 @@
 /*
- * Crypto Signal Dashboard - Client-Side Rendering (CF Bypass Ready)
- * UI: 白色顶部状态栏 + 吸顶 + 系统时间黑色
- * Logic: 保持原有逻辑不变
+ * Crypto Signal Dashboard - Final UI Fix
+ * 修复：顶部状态栏黑条问题
+ * 效果：状态栏白色背景 + 黑色文字 + 页面内容浅灰
  */
 
-const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
+const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=200";
 
 (async () => {
-    // Surge 脚本只负责返回 HTML 骨架，不做任何网络请求
-    // 这样保证永远不会超时，永远能进入页面
+    // Surge 脚本只负责返回 HTML 骨架
     const html = renderPageSkeleton();
 
     $done({
@@ -23,7 +22,6 @@ const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=s
     });
 })();
 
-// --- 生成 HTML 骨架 (包含前端 JS 逻辑) ---
 function renderPageSkeleton() {
     return `
     <!DOCTYPE html>
@@ -31,12 +29,17 @@ function renderPageSkeleton() {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="theme-color" content="#ffffff">
+        
         <title>交易信号</title>
         <style>
             :root {
-                --bg: #f5f7fa; 
+                --page-bg: #f5f7fa;   /* 页面内容背景：浅灰 */
+                --header-bg: #ffffff; /* 头部背景：纯白 */
+                
                 --card-bg: #ffffff;
                 --text-main: #1a1a1a;
                 --text-sub: #8c8c8c;
@@ -44,16 +47,18 @@ function renderPageSkeleton() {
                 --red: #f85149;
                 --blue: #1f6feb;
                 
-                /* 修改点：顶部导航背景纯白，文字纯黑 */
-                --nav-bg: #ffffff; 
-                --nav-text: #1a1a1a;
-                
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
             
+            /* 关键修复：html 设置为白色，填补刘海区域的黑色空隙 */
+            html {
+                background-color: var(--header-bg);
+            }
+            
             body { 
-                background: var(--bg); 
+                /* body 设置为浅灰色，区分内容 */
+                background-color: var(--page-bg); 
                 color: var(--text-main); 
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                 margin: 0; 
@@ -63,35 +68,29 @@ function renderPageSkeleton() {
                 -webkit-user-select: none;
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
+                /* 确保 body 至少撑满屏幕，防止下方露出白色 html 背景 */
+                min-height: 100vh;
             }
             
-            /* 顶部标题栏 - UI 核心修改 */
+            /* 顶部标题栏 */
             .app-header { 
-                background: var(--nav-bg); 
-                color: var(--nav-text);
-                /* 顶部内边距包含安全区域，确保白色背景填满刘海区 */
+                background: var(--header-bg); 
+                color: var(--text-main);
+                /* 顶部内边距包含安全区域 */
                 padding: calc(12px + var(--safe-top)) 20px 12px 20px; 
                 position: sticky; 
                 top: 0; 
                 z-index: 100; 
-                /* 添加轻微阴影，区分白色头部和下方内容 */
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-                font-weight: bold;
+                /* 只有非常淡的阴影，实现与状态栏的无缝融合感 */
+                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             }
             
             .app-title { 
-                font-size: 20px; 
+                font-size: 22px; 
                 font-weight: 800; 
                 margin: 0; 
-                color: var(--nav-text); 
+                color: #000; 
                 letter-spacing: -0.5px;
-            }
-            
-            .app-subtitle {
-                font-size: 12px;
-                color: #8c8c8c;
-                margin-top: 4px;
-                font-weight: normal;
             }
             
             /* 状态提示区域 */
@@ -104,24 +103,15 @@ function renderPageSkeleton() {
                 border: 1px solid #ffccc7;
                 border-radius: 12px;
                 padding: 12px 15px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                text-align: left;
+                display: flex; align-items: center; gap: 12px; text-align: left;
             }
             .error-icon { font-size: 20px; }
             .error-content { flex: 1; }
             .error-title { font-weight: bold; color: #cf1322; font-size: 14px; }
             .error-desc { color: #cf1322; font-size: 12px; margin-top: 2px; word-break: break-all; }
             .retry-btn {
-                background: #fff;
-                border: 1px solid #ffccc7;
-                color: #cf1322;
-                padding: 6px 12px;
-                border-radius: 6px;
-                font-size: 12px;
-                cursor: pointer;
-                font-weight: 600;
+                background: #fff; border: 1px solid #ffccc7; color: #cf1322;
+                padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;
             }
 
             /* 加载动画 */
@@ -129,10 +119,8 @@ function renderPageSkeleton() {
                 border: 3px solid rgba(0,0,0,0.1);
                 border-radius: 50%;
                 border-top: 3px solid var(--blue);
-                width: 24px;
-                height: 24px;
-                -webkit-animation: spin 1s linear infinite; /* Safari */
-                animation: spin 1s linear infinite;
+                width: 24px; height: 24px;
+                -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite;
                 margin: 0 auto 10px auto;
             }
             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -172,12 +160,8 @@ function renderPageSkeleton() {
             .footer-buttons { display: flex; gap: 10px; }
             
             .details-btn { 
-                background: #f0f2f5; 
-                color: #666; 
-                padding: 8px 16px; 
-                border-radius: 8px; 
-                cursor: pointer; 
-                font-weight: 600;
+                background: #f0f2f5; color: #666; padding: 8px 16px; 
+                border-radius: 8px; cursor: pointer; font-weight: 600;
                 transition: opacity 0.2s;
             }
             .details-btn:active { opacity: 0.8; }
@@ -186,7 +170,6 @@ function renderPageSkeleton() {
     <body>
         <div class="app-header">
             <div class="app-title">交易信号</div>
-            <div class="app-subtitle">所有频道的交易信号汇总</div>
         </div>
 
         <div id="status-bar">
@@ -213,7 +196,6 @@ function renderPageSkeleton() {
                 statusEl.style.display = 'block';
 
                 try {
-                    // 使用浏览器原生 Fetch，可继承 Cloudflare Cookie
                     const response = await fetch(API_URL);
                     
                     if (!response.ok) {
@@ -234,7 +216,6 @@ function renderPageSkeleton() {
 
                 } catch (err) {
                     console.error(err);
-                    // 显示友好的错误提示，并提供重试按钮
                     statusEl.innerHTML = \`
                         <div class="error-banner">
                             <div class="error-icon">⚠️</div>
@@ -248,7 +229,6 @@ function renderPageSkeleton() {
                 }
             }
 
-            // --- 核心解析逻辑 (移植到前端) ---
             function parseSignalLogic(S, f, originalMsg) {
                 let T = {
                     direction: "unknown",
@@ -300,7 +280,6 @@ function renderPageSkeleton() {
                 return T;
             }
 
-            // --- 渲染卡片 HTML ---
             function renderCards(signals) {
                 return signals.map(s => {
                     let dirLabel = "观望";
