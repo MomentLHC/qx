@@ -4,7 +4,7 @@
  * 2. 强健的错误处理，超时也能进入页面
  */
 
-const API_URL = "http://ai.zhixing.icu:5002/api/frontend-messages?type=signal&limit=200";
+const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=200";
 
 (async () => {
     // 初始化变量
