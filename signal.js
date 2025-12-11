@@ -1,16 +1,10 @@
 /*
  * Crypto Signal Dashboard - Client-Side Rendering (CF Bypass Ready)
- * 1. 移除搜索/Tab/底部导航/AI标签/头像
- * 2. 架构改为前端请求：秒开页面，进页面后再加载数据
- * 3. 错误处理：请求失败会在页面内显示红色提示，不会白屏
+ * UI: 白色顶部状态栏 + 吸顶 + 系统时间黑色
+ * Logic: 保持原有逻辑不变
  */
 
-// 页面拦截路径配置建议：
-// 为了完美通过 Cloudflare，建议将 Surge 脚本拦截的 URL 改为 API 同域名的子路径
-// 例如 pattern: ^https?:\/\/kol\.zhixing\.icu\/dashboard
-// 访问时使用: https://kol.zhixing.icu/dashboard
-
-const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=200";
+const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
 
 (async () => {
     // Surge 脚本只负责返回 HTML 骨架，不做任何网络请求
@@ -49,8 +43,11 @@ function renderPageSkeleton() {
                 --green: #3fb950;
                 --red: #f85149;
                 --blue: #1f6feb;
+                
+                /* 修改点：顶部导航背景纯白，文字纯黑 */
                 --nav-bg: #ffffff; 
                 --nav-text: #1a1a1a;
+                
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
@@ -68,21 +65,37 @@ function renderPageSkeleton() {
                 -webkit-tap-highlight-color: transparent;
             }
             
-            /* 顶部标题栏 */
+            /* 顶部标题栏 - UI 核心修改 */
             .app-header { 
                 background: var(--nav-bg); 
                 color: var(--nav-text);
-                padding: calc(15px + var(--safe-top)) 20px 15px 20px; 
+                /* 顶部内边距包含安全区域，确保白色背景填满刘海区 */
+                padding: calc(12px + var(--safe-top)) 20px 12px 20px; 
                 position: sticky; 
                 top: 0; 
                 z-index: 100; 
-                border-bottom: 1px solid rgba(0,0,0,0.05);
+                /* 添加轻微阴影，区分白色头部和下方内容 */
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                font-weight: bold;
             }
             
-            .app-title { font-size: 22px; font-weight: 800; margin: 0; color: #000; letter-spacing: -0.5px;}
+            .app-title { 
+                font-size: 20px; 
+                font-weight: 800; 
+                margin: 0; 
+                color: var(--nav-text); 
+                letter-spacing: -0.5px;
+            }
+            
+            .app-subtitle {
+                font-size: 12px;
+                color: #8c8c8c;
+                margin-top: 4px;
+                font-weight: normal;
+            }
             
             /* 状态提示区域 */
-            #status-bar { padding: 20px; text-align: center; }
+            #status-bar { padding: 40px 20px; text-align: center; }
             
             /* 错误提示条 */
             .error-banner {
@@ -113,7 +126,7 @@ function renderPageSkeleton() {
 
             /* 加载动画 */
             .loader {
-                border: 3px solid #f3f3f3;
+                border: 3px solid rgba(0,0,0,0.1);
                 border-radius: 50%;
                 border-top: 3px solid var(--blue);
                 width: 24px;
@@ -173,6 +186,7 @@ function renderPageSkeleton() {
     <body>
         <div class="app-header">
             <div class="app-title">交易信号</div>
+            <div class="app-subtitle">所有频道的交易信号汇总</div>
         </div>
 
         <div id="status-bar">
