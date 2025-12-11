@@ -1,7 +1,8 @@
 /*
- * Crypto Signal Dashboard - Final UI Fix
- * 修复：顶部状态栏黑条问题
- * 效果：状态栏白色背景 + 黑色文字 + 页面内容浅灰
+ * Crypto Signal Dashboard - CSR Version (CF Bypass Ready)
+ * Updates:
+ * 1. 时间格式化：GMT -> YYYY-MM-DD HH:mm:ss
+ * 2. 交互增强：点击数据区域看识别结果，新增AI分析按钮，查看原文看原始内容
  */
 
 const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
@@ -22,6 +23,7 @@ const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=s
     });
 })();
 
+// --- 生成 HTML 骨架 ---
 function renderPageSkeleton() {
     return `
     <!DOCTYPE html>
@@ -29,80 +31,52 @@ function renderPageSkeleton() {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-        
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="theme-color" content="#ffffff">
-        <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
         <title>交易信号</title>
         <style>
             :root {
-                --page-bg: #f5f7fa;   /* 页面内容背景：浅灰 */
-                --header-bg: #ffffff; /* 头部背景：纯白 */
-                
+                --bg: #f5f7fa; 
                 --card-bg: #ffffff;
                 --text-main: #1a1a1a;
                 --text-sub: #8c8c8c;
                 --green: #3fb950;
                 --red: #f85149;
                 --blue: #1f6feb;
-                
+                --purple: #7048e8; /* 新增 AI 按钮颜色 */
+                --nav-bg: #ffffff; 
+                --nav-text: #1a1a1a;
                 --safe-top: env(safe-area-inset-top);
                 --safe-bottom: env(safe-area-inset-bottom);
             }
             
-            html {
-                background-color: var(--header-bg);
-            }
-            
             body { 
-                /* body 设置为浅灰色，区分内容 */
-                background-color: var(--page-bg); 
+                background: var(--bg); 
                 color: var(--text-main); 
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-                margin: 0; 
-                padding: 0; 
+                margin: 0; padding: 0; 
                 padding-bottom: calc(20px + var(--safe-bottom));
                 overscroll-behavior-y: none;
-                -webkit-user-select: none;
-                user-select: none;
+                -webkit-user-select: none; user-select: none;
                 -webkit-tap-highlight-color: transparent;
-                /* 确保 body 至少撑满屏幕，防止下方露出白色 html 背景 */
-                min-height: 100vh;
             }
             
             /* 顶部标题栏 */
             .app-header { 
-                background: var(--header-bg); 
-                color: var(--text-main);
-                /* 顶部内边距包含安全区域 */
-                padding: calc(12px + var(--safe-top)) 20px 12px 20px; 
-                position: sticky; 
-                top: 0; 
-                z-index: 100; 
-                /* 只有非常淡的阴影，实现与状态栏的无缝融合感 */
-                box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+                background: var(--nav-bg); color: var(--nav-text);
+                padding: calc(15px + var(--safe-top)) 20px 15px 20px; 
+                position: sticky; top: 0; z-index: 100; 
+                border-bottom: 1px solid rgba(0,0,0,0.05);
             }
-            
-            .app-title { 
-                font-size: 22px; 
-                font-weight: 800; 
-                margin: 0; 
-                color: #000; 
-                letter-spacing: -0.5px;
-            }
+            .app-title { font-size: 22px; font-weight: 800; margin: 0; color: #000; letter-spacing: -0.5px;}
             
             /* 状态提示区域 */
-            #status-bar { padding: 40px 20px; text-align: center; }
+            #status-bar { padding: 20px; text-align: center; }
             
             /* 错误提示条 */
             .error-banner {
-                margin: 15px 20px;
-                background: #fff2f0;
-                border: 1px solid #ffccc7;
-                border-radius: 12px;
-                padding: 12px 15px;
-                display: flex; align-items: center; gap: 12px; text-align: left;
+                margin: 15px 20px; background: #fff2f0; border: 1px solid #ffccc7; border-radius: 12px;
+                padding: 12px 15px; display: flex; align-items: center; gap: 12px; text-align: left;
             }
             .error-icon { font-size: 20px; }
             .error-content { flex: 1; }
@@ -115,23 +89,16 @@ function renderPageSkeleton() {
 
             /* 加载动画 */
             .loader {
-                border: 3px solid rgba(0,0,0,0.1);
-                border-radius: 50%;
-                border-top: 3px solid var(--blue);
-                width: 24px; height: 24px;
-                -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite;
-                margin: 0 auto 10px auto;
+                border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--blue);
+                width: 24px; height: 24px; margin: 0 auto 10px auto;
+                animation: spin 1s linear infinite;
             }
             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             
             /* Card 样式 */
             .card { 
-                background: var(--card-bg); 
-                border-radius: 16px; 
-                padding: 20px; 
-                margin: 15px 20px; 
-                box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-                border: 1px solid rgba(0,0,0,0.02);
+                background: var(--card-bg); border-radius: 16px; padding: 20px; margin: 15px 20px; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02);
             }
             .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
             
@@ -146,7 +113,14 @@ function renderPageSkeleton() {
             
             .symbol-title { font-size: 24px; font-weight: 800; margin-bottom: 20px; color: #000; letter-spacing: -0.5px; }
             
-            .signal-data { background: #f9fafb; padding: 15px; border-radius: 12px; }
+            /* 数据区域 - 可点击效果 */
+            .signal-data { 
+                background: #f9fafb; padding: 15px; border-radius: 12px; 
+                cursor: pointer; /* 提示可点击 */
+                transition: background-color 0.2s;
+            }
+            .signal-data:active { background: #eef0f5; } /* 点击反馈 */
+
             .data-row { display: flex; justify-content: space-between; margin-bottom: 15px; }
             .data-row:last-child { margin-bottom: 0; }
             .data-item { flex: 1; }
@@ -156,14 +130,19 @@ function renderPageSkeleton() {
             .value.loss { color: var(--red); }
             
             .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 12px; color: #bbb; font-weight: 500;}
-            .footer-buttons { display: flex; gap: 10px; }
+            .footer-buttons { display: flex; gap: 8px; }
             
             .details-btn { 
-                background: #f0f2f5; color: #666; padding: 8px 16px; 
-                border-radius: 8px; cursor: pointer; font-weight: 600;
+                background: #f0f2f5; color: #666; padding: 8px 12px; 
+                border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px;
                 transition: opacity 0.2s;
             }
             .details-btn:active { opacity: 0.8; }
+            
+            /* AI 按钮特殊样式 */
+            .ai-btn {
+                background: #f3f0ff; color: var(--purple);
+            }
         </style>
     </head>
     <body>
@@ -181,7 +160,6 @@ function renderPageSkeleton() {
         <script>
             const API_URL = "${API_URL}";
 
-            // 页面加载完成后立即执行
             document.addEventListener('DOMContentLoaded', () => {
                 fetchData();
             });
@@ -190,16 +168,12 @@ function renderPageSkeleton() {
                 const statusEl = document.getElementById('status-bar');
                 const contentEl = document.getElementById('content-area');
                 
-                // 显示加载状态
                 statusEl.innerHTML = '<div class="loader"></div><div style="color:#999; font-size:13px;">正在获取数据...</div>';
                 statusEl.style.display = 'block';
 
                 try {
                     const response = await fetch(API_URL);
-                    
-                    if (!response.ok) {
-                        throw new Error("HTTP Status: " + response.status);
-                    }
+                    if (!response.ok) throw new Error("HTTP Status: " + response.status);
                     
                     const data = await response.json();
                     const messages = data.messages || [];
@@ -207,7 +181,6 @@ function renderPageSkeleton() {
                     if (messages.length === 0) {
                         statusEl.innerHTML = '<div style="color:#999; padding:20px;">暂无信号数据</div>';
                     } else {
-                        // 隐藏状态栏，显示内容
                         statusEl.style.display = 'none';
                         const parsed = messages.map(msg => parseSignalLogic(msg.signal, msg.message_content, msg));
                         contentEl.innerHTML = renderCards(parsed);
@@ -228,6 +201,32 @@ function renderPageSkeleton() {
                 }
             }
 
+            // --- 时间格式化辅助函数 ---
+            function formatDate(isoString) {
+                if (!isoString) return '';
+                const date = new Date(isoString);
+                if (isNaN(date.getTime())) return isoString; // 如果解析失败返回原字符串
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+
+                return \`\${year}-\${month}-\${day} \${hours}:\${minutes}:\${seconds}\`;
+            }
+
+            // --- 文本安全转义 (防止 Alert 报错) ---
+            function escapeText(text) {
+                if (!text) return '';
+                // 转义反斜杠、单引号、换行符
+                return text.replace(/\\\\/g, '\\\\\\\\')
+                           .replace(/'/g, "\\\\'")
+                           .replace(/\\n/g, '\\\\n')
+                           .replace(/\\r/g, '');
+            }
+
             function parseSignalLogic(S, f, originalMsg) {
                 let T = {
                     direction: "unknown",
@@ -239,8 +238,11 @@ function renderPageSkeleton() {
                     position: "-",
                     type: "合约",
                     author: originalMsg.author_nickname || "未知分析师",
-                    time: originalMsg.message_time || originalMsg.created_at, 
+                    // 修改1：使用 formatDate 格式化 created_at
+                    time: formatDate(originalMsg.created_at), 
                     rawSignal: S || "",
+                    message_content: originalMsg.message_content || "",
+                    analysis: originalMsg.analysis || "暂无分析内容",
                     channel: originalMsg.channel_name || "未知频道"
                 };
 
@@ -287,6 +289,11 @@ function renderPageSkeleton() {
                     if (s.direction === 'short') { dirLabel = '↓ 做空'; dirClass = 'short'; }
                     if (s.direction === 'spot') { dirLabel = '现货'; dirClass = 'spot'; }
 
+                    // 预处理用于 Alert 的文本
+                    const safeRaw = escapeText(s.rawSignal);
+                    const safeAnalysis = escapeText(s.analysis);
+                    const safeContent = escapeText(s.message_content);
+
                     return \`
                     <div class="card">
                         <div class="card-header">
@@ -301,7 +308,7 @@ function renderPageSkeleton() {
                         
                         <div class="symbol-title">\${s.symbol}</div>
                         
-                        <div class="signal-data">
+                        <div class="signal-data" onclick="alert('\${safeRaw}')">
                             <div class="data-row">
                                 <div class="data-item">
                                     <div class="label">入场</div>
@@ -327,7 +334,8 @@ function renderPageSkeleton() {
                         <div class="card-footer">
                             <div class="time">\${s.time}</div>
                             <div class="footer-buttons">
-                                <div class="details-btn" onclick="alert(\\\'\${s.rawSignal.replace(/\\n/g, '\\\\n')}\\\')">查看原文 ></div>
+                                <div class="details-btn ai-btn" onclick="alert('\${safeAnalysis}')">AI 分析</div>
+                                <div class="details-btn" onclick="alert('\${safeContent}')">查看原文 ></div>
                             </div>
                         </div>
                     </div>
