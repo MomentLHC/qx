@@ -4,7 +4,7 @@
  * 效果：状态栏白色背景 + 黑色文字 + 页面内容浅灰
  */
 
-const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=200";
+const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
 
 (async () => {
     // Surge 脚本只负责返回 HTML 骨架
