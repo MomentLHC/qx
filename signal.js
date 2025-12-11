@@ -33,7 +33,7 @@ function renderPageSkeleton() {
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <meta name="theme-color" content="#ffffff">
-        
+        <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/bullish.png">
         <title>交易信号</title>
         <style>
             :root {
@@ -51,7 +51,6 @@ function renderPageSkeleton() {
                 --safe-bottom: env(safe-area-inset-bottom);
             }
             
-            /* 关键修复：html 设置为白色，填补刘海区域的黑色空隙 */
             html {
                 background-color: var(--header-bg);
             }
