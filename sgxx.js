@@ -3,7 +3,7 @@
  *
 [rewrite_local]
 
-^https?:\/\/kol\.zhixing\.icu\/dashboard url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/sgqx.js
+^https?:\/\/kol\.zhixing\.icu\/dashboard url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/sgxx.js
 
 
 [mitm]
