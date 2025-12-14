@@ -2,13 +2,12 @@
  *
  *
 [rewrite_local]
-^https?:\/\/kol\.zhixing\.icu\/dashboard url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/sgml.js
+# > 趣乐转谱 (EditScore)
+^https?:\/\/editscore-api\.quthing\.com\/rolls\/score\/(limit|query) url script-response-body https://raw.githubusercontent.com/MomentLHC/qx/ml/lyzp.js
 
 
 [mitm]
-hostname = kol.zhixing.icu
+hostname = editscore-api.quthing.com
 *
 *
 */
-
-
