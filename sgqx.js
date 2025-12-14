@@ -13,10 +13,7 @@ hostname = kol.zhixing.icu
 */
 
 
-/*
- * Crypto Signal Dashboard - QX Version
- * 适配 Quantumult X 的 http-request 脚本
- */
+
 
 const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
 
