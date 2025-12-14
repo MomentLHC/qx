@@ -9,7 +9,7 @@
 ***************************
 [rewrite_local]
 # > 交易信号看板 (访问 https://kol.zhixing.icu/dashboard)
-^https?:\/\/kol\.zhixing\.icu\/dashboard url script-echo-response https://raw.githubusercontent.com/MomentLHC/qx/ml/sgml.js
+^https?:\/\/kol\.zhixing\.icu\/dashboard url script-analyze-echo-response https://raw.githubusercontent.com/MomentLHC/qx/ml/sgml.js
 
 [mitm]
 hostname = kol.zhixing.icu
