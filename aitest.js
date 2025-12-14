@@ -5,7 +5,7 @@
 * * [Script]
 * ai-analysis = type=generic, timeout=60, script-path=ai_analysis.js
 */
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InhpYW9sYW5nIiwicm9sZSI6MCwiaWF0IjoxNzY1NzQxODQ0LCJleHAiOjE3NjYzNDY2NDR9.eypriwJ3rnEI4J6X0zntWimLS9uT8G-dJ8OayTo-DNk";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InhpYW9sYW5nIiwicm9sZSI6MCwiaWF0IjoxNzY1NzQyMzUyLCJleHAiOjE3NjYzNDcxNTJ9.sDLgH5J1tVi9PGYx3yPyAn54AX3_1wKctdusQiaw-YA";
 
 //const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImlraWtpayIsInJvbGUiOjAsImlhdCI6MTc2NTczMjM5MiwiZXhwIjoxNzY2MzM3MTkyfQ.pLMjE919nl9m8LY96kaOFWfc7lTe5vHHlVL5fC--Fmo";
 const API_BASE = "http://api.xiaokai.icu/:4004/api/hangqing"; // 注意：修正了端口前的斜杠
