@@ -1,14 +1,16 @@
 /*
- * Crypto Signal Dashboard - Final Fix (UI & Timezone)
- * 1. 修复顶部黑边：设置 html 背景色
- * 2. 修复时间问题：强制使用 UTC 时间，不加 8 小时
- * 3. 保持白色 UI 和交互功能
+ * Crypto Signal Dashboard - Final Version (With Floating Nav)
+ * Updates:
+ * 1. 保留所有逻辑和UI修复（时间格式、黑边修复、交互等）
+ * 2. 仅添加：悬浮式底部导航栏
  */
 
 const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=signal&limit=50";
 
 (async () => {
+    // Surge 脚本只负责返回 HTML 骨架
     const html = renderPageSkeleton();
+
     $done({
         response: {
             status: 200,
@@ -21,6 +23,7 @@ const API_URL = "https://kol.zhixing.icu/api/user/proxy/frontend-messages?type=s
     });
 })();
 
+// --- 生成 HTML 骨架 ---
 function renderPageSkeleton() {
     return `
     <!DOCTYPE html>
@@ -50,7 +53,6 @@ function renderPageSkeleton() {
                 --safe-bottom: env(safe-area-inset-bottom);
             }
             
-            /* 【修复1】html背景设为白色，彻底解决刘海屏黑边 */
             html {
                 background-color: var(--header-bg);
             }
@@ -61,12 +63,12 @@ function renderPageSkeleton() {
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                 margin: 0; 
                 padding: 0; 
-                padding-bottom: calc(20px + var(--safe-bottom));
+                /* 增加底部留白，防止内容被底部导航栏遮挡 */
+                padding-bottom: calc(90px + var(--safe-bottom));
                 overscroll-behavior-y: none;
                 -webkit-user-select: none;
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
-                /* 确保 body 撑满，防止露底 */
                 min-height: 100vh;
             }
             
@@ -151,6 +153,38 @@ function renderPageSkeleton() {
             }
             .details-btn:active { opacity: 0.8; }
             .ai-btn { background: #f3f0ff; color: var(--purple); }
+
+            /* --- 新增：悬浮式底部导航栏样式 --- */
+            .bottom-nav { 
+                position: fixed; 
+                bottom: calc(20px + var(--safe-bottom)); 
+                left: 20px; 
+                right: 20px; 
+                height: 60px;
+                background: rgba(255, 255, 255, 0.85); 
+                backdrop-filter: blur(12px); 
+                -webkit-backdrop-filter: blur(12px);
+                display: flex; 
+                justify-content: space-around; 
+                align-items: center;
+                border-radius: 30px; 
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+                z-index: 200;
+                border: 1px solid rgba(255,255,255,0.5); 
+            }
+            .nav-item { 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center;
+                font-size: 10px; 
+                color: #999; 
+                width: 60px;
+                font-weight: 600;
+            }
+            .nav-item.active { color: var(--blue); }
+            .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; }
+            .nav-icon svg { fill: currentColor; }
         </style>
     </head>
     <body>
@@ -164,6 +198,17 @@ function renderPageSkeleton() {
         </div>
 
         <div id="content-area"></div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg></div>
+                交易信号
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
+                我的
+            </div>
+        </div>
 
         <script>
             const API_URL = "${API_URL}";
@@ -209,7 +254,7 @@ function renderPageSkeleton() {
                 }
             }
 
-            // 【修复2】时间格式化：强制使用 UTC 时间，不转换本地时区
+            // 时间格式化：强制使用 UTC 时间，不转换本地时区
             function formatDate(isoString) {
                 if (!isoString) return '';
                 const date = new Date(isoString);
@@ -218,7 +263,7 @@ function renderPageSkeleton() {
                 const year = date.getUTCFullYear();
                 const month = String(date.getUTCMonth() + 1).padStart(2, '0');
                 const day = String(date.getUTCDate()).padStart(2, '0');
-                const hours = String(date.getUTCHours()).padStart(2, '0'); // 使用 getUTC 防止自动+8
+                const hours = String(date.getUTCHours()).padStart(2, '0'); 
                 const minutes = String(date.getUTCMinutes()).padStart(2, '0');
                 const seconds = String(date.getUTCSeconds()).padStart(2, '0');
 
