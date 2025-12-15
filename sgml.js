@@ -25,15 +25,15 @@ if (obj?.user) {
 
   obj.user.normalVipBoolean = true;
   obj.user.normalVipForever = true;
-  obj.user.normalVipDt = 9999999999999;
+  obj.user.normalVipDt = 4102444799000;
 
   obj.user.adVipBoolean = true;
   obj.user.adVipForever = true;
-  obj.user.adVipDt = 9999999999999;
+  obj.user.adVipDt = 4102444799000;
 
   obj.user.visitVipBoolean = true;
   obj.user.visitVipForever = true;
-  obj.user.visitVipDt = 9999999999999;
+  obj.user.visitVipDt = 4102444799000;
 
   obj.user.countImg = 9999;
   obj.user.countImgTotal = 9999;
