@@ -10,7 +10,7 @@
 ***************************
 [rewrite_local]
 # > 团团记账-自动记账ai聊天记账软件
-^https?:\/\/gs.gateway.gameley.cn\/np-book-user\/user\/refresh\/token url script-response-body https://raw.githubusercontent.com/momentLHC/qx/mp/sgml.js
+^https?:\/\/gs.gateway.gameley.cn\/np-book-user\/user\/refresh\/token url script-response-body https://raw.githubusercontent.com/momentLHC/qx/ml/sgml.js
 
 [mitm]
 hostname = gs.gateway.gameley.cn
