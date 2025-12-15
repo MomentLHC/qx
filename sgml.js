@@ -21,25 +21,25 @@ hostname = gs.gateway.gameley.cn
 let body = $response.body;
 let obj = JSON.parse(body);
 
-if (obj?.user) {
+if (obj?.info) {
 
-  obj.user.normalVipBoolean = true;
-  obj.user.normalVipForever = true;
-  obj.user.normalVipDt = 4102444799000;
+  obj.info.user.normalVipBoolean = true;
+  obj.info.user.normalVipForever = true;
+  obj.info.user.normalVipDt = 4102444799000;
 
-  obj.user.adVipBoolean = true;
-  obj.user.adVipForever = true;
-  obj.user.adVipDt = 4102444799000;
+  obj.info.user.adVipBoolean = true;
+  obj.info.user.adVipForever = true;
+  obj.info.user.adVipDt = 4102444799000;
 
-  obj.user.visitVipBoolean = true;
-  obj.user.visitVipForever = true;
-  obj.user.visitVipDt = 4102444799000;
+  obj.info.user.visitVipBoolean = true;
+  obj.info.user.visitVipForever = true;
+  obj.info.user.visitVipDt = 4102444799000;
 
-  obj.user.countImg = 9999;
-  obj.user.countImgTotal = 9999;
-  obj.user.countImgAuto = 9999;
-  obj.user.countImgAutoTotal = 9999;
-  obj.user.countReportTotal = 9999;
+  obj.info.user.countImg = 9999;
+  obj.info.user.countImgTotal = 9999;
+  obj.info.user.countImgAuto = 9999;
+  obj.info.user.countImgAutoTotal = 9999;
+  obj.info.user.countReportTotal = 9999;
 }
 
 $done({ body: JSON.stringify(obj) });
