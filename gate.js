@@ -14,8 +14,6 @@ const url = $request.url;
 // 只需要填入 URL 中具有辨识度的部分即可
 const targetPaths = [
     "futures/usdt/orders",         // 对应 v3/futures/usdt/orders
-    "copy/api/leader/risk_tips",   // 对应 v3/copy/api/leader/risk_tips
-    "user_favorites/markets",      // 对应 v3/user_favorites/markets
     "futures/usdt/accounts",
 ];
 
