@@ -1,4 +1,6 @@
 /*
+更新时间：2025.12.16  16:16:00
+*****************
 [rewrite_local]
 ^https:\/\/app\.(smartappnet|studiotv|csrqoa|zudanje|mbm06)\.(net|com)\/apim\/v3.* url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
 
