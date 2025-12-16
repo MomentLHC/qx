@@ -12,7 +12,7 @@ const url = $request.url;
 // --- 配置区域 ---
 // 冷却时间，单位毫秒。这里设为 5 分钟 (5 * 60 * 1000)
 // 意味着 5 分钟内最多只提醒一次
-const COOLDOWN_TIME = 5 * 60 * 1000; 
+const COOLDOWN_TIME = 3 * 60 * 1000; 
 // 存储 Key，保持唯一性
 const STORE_KEY = "GATE_NOTIFY_LAST_TIME"; 
 
