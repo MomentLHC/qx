@@ -1,0 +1,46 @@
+/*
+[rewrite_local]
+https:\/\/m\.client\.10010\.com\/(.*)\/smartwisdomCommon url script-request-header https://raw.githubusercontent.com/ByteValley/NetTool/main/Scripts/ComponentService/ChinaUnicom.js
+
+[mitm]
+hostname = m.client.10010.com url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
+*/
+^https:\/\/app\.smartappnet\.net\/apim\/
+const scriptName = "SmartApp 捕获提醒";
+const url = $request.url;
+
+// 这里是你要求监控的路径关键词
+// 只需要填入 URL 中具有辨识度的部分即可
+const targetPaths = [
+    "futures/usdt/orders",         // 对应 v3/futures/usdt/orders
+    "copy/api/leader/risk_tips",   // 对应 v3/copy/api/leader/risk_tips
+    "user_favorites/markets",      // 对应 v3/user_favorites/markets
+    "getUserCenterOrderList"       // 对应 v1/getUserCenterOrderList
+];
+
+let isMatch = false;
+let matchedPath = "";
+
+// 遍历检查当前 URL 是否包含上述关键字
+for (let path of targetPaths) {
+    if (url.indexOf(path) !== -1) {
+        isMatch = true;
+        matchedPath = path;
+        break;
+    }
+}
+
+if (isMatch) {
+    console.log(`[${scriptName}] 捕获成功!`);
+    console.log(`匹配路径: ${matchedPath}`);
+    console.log(`完整URL: ${url}`);
+
+    // 发送通知
+    // 标题: 脚本名称
+    // 副标题: 显示匹配到了哪一段路径
+    // 内容: 提示用户去日志查看完整链接
+    $notify(scriptName, `🎯 命中: ...${matchedPath}`, "完整 URL 已记录在脚本日志中");
+}
+
+// 结束请求，不影响 App 正常运行
+$done({});
