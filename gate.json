@@ -9,16 +9,25 @@
       "id": "gate_monitor_settings",
       "name": "Gate 监控设置",
       "keys": [
-        "GATE_MAGNIFICATION"
+        "GATE_MAGNIFICATION",
+        "GATE_COOLDOWN_MINUTES"
       ],
       "settings": [
         {
           "id": "GATE_MAGNIFICATION",
-          "name": "持仓放大倍数",
+          "name": "💰 持仓放大倍数",
           "val": "100",
           "type": "text",
           "placeholder": "请输入数字，例如 100",
-          "desc": "设置持仓Size、保证金及盈亏的显示倍数。默认100，输入1则显示原值。"
+          "desc": "设置持仓Size、保证金及盈亏的显示倍数。默认100。"
+        },
+        {
+          "id": "GATE_COOLDOWN_MINUTES",
+          "name": "⏱️ 通知冷却时间 (分钟)",
+          "val": "5",
+          "type": "text",
+          "placeholder": "请输入分钟数，例如 5",
+          "desc": "两次通知之间的最小间隔时间。默认 5 分钟。"
         }
       ],
       "author": "@momentLHC",
