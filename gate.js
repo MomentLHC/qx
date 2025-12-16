@@ -15,7 +15,7 @@ const url = $request.url;
 // 这里是你要求监控的路径关键词
 // 只需要填入 URL 中具有辨识度的部分即可
 const targetPaths = [
-    "futures/usdt/orders",         // 对应 v3/futures/usdt/orders
+    "futures/usdt/orders",        
     "futures/usdt/accounts",
 ];
 
@@ -32,9 +32,7 @@ for (let path of targetPaths) {
 }
 
 if (isMatch) {
-    console.log(`[${scriptName}] 捕获成功!`);
     console.log(`匹配路径: ${matchedPath}`);
-    console.log(`完整URL: ${url}`);
 
     // 发送通知
     // 标题: 脚本名称
