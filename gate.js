@@ -1,9 +1,9 @@
 /*
 [rewrite_local]
-^https:\/\/app\.smartappnet\.net\/apim\/v3.* url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
+^https:\/\/app\.(smartappnet|studiotv)\.net\/apim\/v3.* url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
 
 [mitm]
-hostname = app.smartappnet.net
+hostname = app.smartappnet.net,app.studiotv.net
 */
 
 
