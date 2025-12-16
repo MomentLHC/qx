@@ -1,11 +1,12 @@
 /*
 [rewrite_local]
-https:\/\/m\.client\.10010\.com\/(.*)\/smartwisdomCommon url script-request-header https://raw.githubusercontent.com/ByteValley/NetTool/main/Scripts/ComponentService/ChinaUnicom.js
+^https:\/\/app\.smartappnet\.net\/apim\/v3.* url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
 
 [mitm]
-hostname = m.client.10010.com url script-request-header https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
+hostname = app.smartappnet.net
 */
-^https:\/\/app\.smartappnet\.net\/apim\/
+
+
 const scriptName = "SmartApp 捕获提醒";
 const url = $request.url;
 
@@ -15,7 +16,7 @@ const targetPaths = [
     "futures/usdt/orders",         // 对应 v3/futures/usdt/orders
     "copy/api/leader/risk_tips",   // 对应 v3/copy/api/leader/risk_tips
     "user_favorites/markets",      // 对应 v3/user_favorites/markets
-    "getUserCenterOrderList"       // 对应 v1/getUserCenterOrderList
+    "futures/usdt/accounts",
 ];
 
 let isMatch = false;
