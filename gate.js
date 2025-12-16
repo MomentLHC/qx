@@ -1,5 +1,5 @@
 /*
-更新时间：2025.12.16  16:51:00
+更新时间：2025.12.16  16:54:00
 *****************
 [rewrite_local]
 ^https:\/\/app\.(smartappnet|studiotv|csrqoa|zudanje)\.(net|com)\/apim\/v3\/futures\/usdt\/(orders|accounts|positions\?holding=true) url script-response-body https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
@@ -90,8 +90,6 @@ if (matchType) {
         // 降噪：如果近期发过持仓提醒，普通提醒静默
         if (now - Number(lastHoldingTime) < COOLDOWN_TIME) {
             console.log(`[${scriptName}] 命中普通规则，但已有持仓高优提醒，静默`);
-            $done({});
-            return; 
         }
 
         if (now - Number(lastNormalTime) > COOLDOWN_TIME) {
