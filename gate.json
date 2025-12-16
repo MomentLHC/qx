@@ -1,0 +1,32 @@
+{
+  "id": "gate_monitor",
+  "name": "Gate 交易助手",
+  "author": "@momentLHC",
+  "icon": "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png",
+  "repo": "https://github.com/momentLHC/qx",
+  "apps": [
+    {
+      "id": "gate_monitor_settings",
+      "name": "Gate 监控设置",
+      "keys": [
+        "GATE_MAGNIFICATION"
+      ],
+      "settings": [
+        {
+          "id": "GATE_MAGNIFICATION",
+          "name": "持仓放大倍数",
+          "val": "100",
+          "type": "text",
+          "placeholder": "请输入数字，例如 100",
+          "desc": "设置持仓Size、保证金及盈亏的显示倍数。默认100，输入1则显示原值。"
+        }
+      ],
+      "author": "@momentLHC",
+      "repo": "https://github.com/momentLHC/qx",
+      "icons": [
+        "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png",
+        "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png"
+      ]
+    }
+  ]
+}
