@@ -1,6 +1,6 @@
 /*
 更新时间：2025.12.16 20:30:00
-功能：开单提醒 + 持仓数据放大 (倍数可配置)
+
 *****************
 [rewrite_local]
 ^https:\/\/(app|m)\.(smartappnet|studiotv|csrqoa|zudanje|bxjddjt)\.(net|com)\/apim\/v3\/futures\/usdt\/(accounts|positions\?holding=true) url script-response-body https://raw.githubusercontent.com/momentLHC/qx/main/gate.js
