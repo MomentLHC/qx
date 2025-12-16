@@ -78,8 +78,6 @@ if (matchType) {
         // 因为持仓提醒更重要，既然已经提示了，就没必要再废话“勿开单”
         if (now - Number(lastHoldingTime) < COOLDOWN_TIME) {
             console.log(`[${scriptName}] 普通接口匹配，但近期已有持仓提醒，主动静默`);
-            $done({});
-            return; 
         }
 
         // 正常的普通冷却判断
