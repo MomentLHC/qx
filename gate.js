@@ -9,7 +9,7 @@ hostname = app.smartappnet.net,app.studiotv.net,app.csrqoa.com,app.zudanje.com
 */
 
 
-const scriptName = "SmartApp 捕获提醒";
+const scriptName = "开单提醒";
 const url = $request.url;
 
 // 这里是你要求监控的路径关键词
@@ -40,8 +40,7 @@ if (isMatch) {
     // 标题: 脚本名称
     // 副标题: 显示匹配到了哪一段路径
     // 内容: 提示用户去日志查看完整链接
-    $notification.post(scriptName, `🎯 命中: ...${matchedPath}`);
-    //$notify(scriptName, `🎯 命中: ...${matchedPath}`, "完整 URL 已记录在脚本日志中");
+    $notification.post(scriptName, '计划、风控、情绪','请勿随意开单');
 }
 
 // 结束请求，不影响 App 正常运行
