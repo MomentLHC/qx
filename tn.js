@@ -46,7 +46,7 @@ if (obj.data) {
 
     // 4. 其他潜在校验字段
     obj.data.total_free_num = 999;
-    obj.data.use_free_num = 0;
+    obj.data.use_free_num = 900;
     obj.data.meal_pay_status = 1; // 支付状态改为已支付
 }
 
