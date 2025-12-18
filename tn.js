@@ -1,7 +1,7 @@
 /*
  *
 [rewrite_local]
-^https?:\/\/api\.itingnao\.com\/api\/user\/info url  script-response-body https://raw.githubusercontent.com/momentLHC/qx/main/itingnao.js
+    ^https?:\/\/api\.itingnao\.com\/api\/user\/info url  script-response-body https://raw.githubusercontent.com/momentLHC/qx/main/tn.js
 
 [mitm]
 hostname = api.itingnao.com
