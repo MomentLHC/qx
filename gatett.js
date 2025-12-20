@@ -12,7 +12,7 @@ hostname = app.smartappnet.net,app.studiotv.net,app.csrqoa.com,app.zudanje.com,a
  */
 
 const scriptName = "Gate 风控拦单";
-let isHandled = false;
+
 
 const req = $request || {};
 const url = req.url || "";
@@ -27,7 +27,6 @@ if (
     url.includes("/apim/v3/futures/usdt/orders") &&
     !url.includes("/precheck")
 ) {
-    isHandled = true;
 
     // 通知
     $notification.post(
@@ -48,9 +47,4 @@ if (
 }
 
 
-// ========================
-// 非下单请求，直接放行
-// ========================
-if (!isHandled) {
-    $done({});
-}
+
