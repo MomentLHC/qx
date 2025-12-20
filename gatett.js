@@ -63,8 +63,7 @@ const mockResponseData = {
 
 if (
     method === "POST" &&
-    url.includes("/apim/v3/futures/usdt/orders") &&
-    !url.includes("/precheck")
+    url.includes("/apim/v3/futures/usdt/orders")
 ) {
     // 1. 发送通知
     $notification.post(
