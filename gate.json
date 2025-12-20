@@ -7,9 +7,9 @@
   "apps": [
     {
       "id": "gate_monitor_settings",
-      "name": "Gate 监控配置",
+      "name": "Gate 助手配置",
       "keys": [
-        "GATE_BLOCK_ORDER",
+        "GATE_BLOCK_TRADE",
         "GATE_MAGNIFICATION",
         "GATE_COOLDOWN_MINUTES",
         "GATE_SCRIPT_NAME",
@@ -20,19 +20,19 @@
       ],
       "settings": [
         {
-          "id": "GATE_BLOCK_ORDER",
-          "name": "🔒 交易冷静锁 (禁止下单)",
+          "id": "GATE_BLOCK_TRADE",
+          "name": "🚫 强制拦截下单 (风控锁)",
           "val": false,
           "type": "boolean",
-          "desc": "开启后将拦截所有合约开仓请求，仅允许平仓。"
+          "desc": "开启后，点击下单将不会发送网络请求，直接返回虚假成功提示。用于管住手。"
         },
         {
           "id": "GATE_MAGNIFICATION",
-          "name": "💰 持仓放大倍数",
+          "name": "💰 资金/持仓放大倍数",
           "val": "100",
           "type": "text",
           "placeholder": "默认 100",
-          "desc": "所有资金、持仓、盈亏数据的显示倍数。"
+          "desc": "所有资金、持仓、盈亏数据的显示倍数 (自慰模式)。"
         },
         {
           "id": "GATE_COOLDOWN_MINUTES",
@@ -44,43 +44,35 @@
         },
         {
           "id": "GATE_SCRIPT_NAME",
-          "name": "🔔 通知脚本名称",
-          "val": "开单提醒",
+          "name": "🔔 通知标题前缀",
+          "val": "Gate助手",
           "type": "text",
-          "placeholder": "默认：开单提醒",
-          "desc": "显示在通知最上方的脚本名称。"
+          "placeholder": "默认：Gate助手",
+          "desc": "通知消息的顶部标题。"
         },
         {
           "id": "GATE_TITLE_HOLDING",
-          "name": "🔴 [持仓] 通知标题",
+          "name": "🔴 [持仓中] 通知标题",
           "val": "⚠️ 当前持有仓位",
-          "type": "text",
-          "placeholder": "默认：⚠️ 当前持有仓位",
-          "desc": "当检测到有持仓时的通知标题。"
+          "type": "text"
         },
         {
           "id": "GATE_BODY_HOLDING",
-          "name": "🔴 [持仓] 通知内容",
+          "name": "🔴 [持仓中] 通知内容",
           "val": "请严格执行止盈止损，切勿抗单！",
-          "type": "text",
-          "placeholder": "默认：请严格执行止盈止损...",
-          "desc": "当检测到有持仓时的通知正文。"
+          "type": "text"
         },
         {
           "id": "GATE_TITLE_NORMAL",
-          "name": "🟢 [常规] 通知标题",
+          "name": "🟢 [空仓/常规] 通知标题",
           "val": "计划、风控、情绪",
-          "type": "text",
-          "placeholder": "默认：计划、风控、情绪",
-          "desc": "空仓或刷新余额时的通知标题。"
+          "type": "text"
         },
         {
           "id": "GATE_BODY_NORMAL",
-          "name": "🟢 [常规] 通知内容",
+          "name": "🟢 [空仓/常规] 通知内容",
           "val": "请勿随意开单",
-          "type": "text",
-          "placeholder": "默认：请勿随意开单",
-          "desc": "空仓或刷新余额时的通知正文。"
+          "type": "text"
         }
       ],
       "author": "@momentLHC",
