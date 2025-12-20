@@ -1,73 +1,93 @@
 {
   "id": "gate_monitor",
-  "name": "Gate 交易风控助手",
+  "name": "Gate 交易助手",
   "author": "@momentLHC",
-  "repo": "https://github.com/momentLHC/qx",
   "icon": "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png",
+  "repo": "https://github.com/momentLHC/qx",
   "apps": [
     {
       "id": "gate_monitor_settings",
       "name": "Gate 监控配置",
       "keys": [
+        "GATE_BLOCK_ORDER",
         "GATE_MAGNIFICATION",
         "GATE_COOLDOWN_MINUTES",
         "GATE_SCRIPT_NAME",
         "GATE_TITLE_HOLDING",
         "GATE_BODY_HOLDING",
         "GATE_TITLE_NORMAL",
-        "GATE_BODY_NORMAL",
-        "GATE_BLOCK_ORDER"
+        "GATE_BODY_NORMAL"
       ],
       "settings": [
         {
           "id": "GATE_BLOCK_ORDER",
-          "name": "🚫 禁止开单",
+          "name": "🔒 交易冷静锁 (禁止下单)",
           "val": false,
           "type": "boolean",
-          "desc": "开启后将拦截所有合约开仓请求，仅允许平仓"
+          "desc": "开启后将拦截所有合约开仓请求，仅允许平仓。"
         },
         {
           "id": "GATE_MAGNIFICATION",
           "name": "💰 持仓放大倍数",
           "val": "100",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认 100",
+          "desc": "所有资金、持仓、盈亏数据的显示倍数。"
         },
         {
           "id": "GATE_COOLDOWN_MINUTES",
           "name": "⏱️ 通知冷却时间 (分钟)",
           "val": "5",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认 5",
+          "desc": "通知间隔时间，避免频繁打扰。"
         },
         {
           "id": "GATE_SCRIPT_NAME",
           "name": "🔔 通知脚本名称",
           "val": "开单提醒",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认：开单提醒",
+          "desc": "显示在通知最上方的脚本名称。"
         },
         {
           "id": "GATE_TITLE_HOLDING",
-          "name": "🔴 持仓标题",
+          "name": "🔴 [持仓] 通知标题",
           "val": "⚠️ 当前持有仓位",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认：⚠️ 当前持有仓位",
+          "desc": "当检测到有持仓时的通知标题。"
         },
         {
           "id": "GATE_BODY_HOLDING",
-          "name": "🔴 持仓内容",
+          "name": "🔴 [持仓] 通知内容",
           "val": "请严格执行止盈止损，切勿抗单！",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认：请严格执行止盈止损...",
+          "desc": "当检测到有持仓时的通知正文。"
         },
         {
           "id": "GATE_TITLE_NORMAL",
-          "name": "🟢 常规标题",
+          "name": "🟢 [常规] 通知标题",
           "val": "计划、风控、情绪",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认：计划、风控、情绪",
+          "desc": "空仓或刷新余额时的通知标题。"
         },
         {
           "id": "GATE_BODY_NORMAL",
-          "name": "🟢 常规内容",
+          "name": "🟢 [常规] 通知内容",
           "val": "请勿随意开单",
-          "type": "text"
+          "type": "text",
+          "placeholder": "默认：请勿随意开单",
+          "desc": "空仓或刷新余额时的通知正文。"
         }
+      ],
+      "author": "@momentLHC",
+      "repo": "https://github.com/momentLHC/qx",
+      "icons": [
+        "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png",
+        "https://img.zhixing.icu/images/%E5%B9%B3%E5%8F%B0Logo/Gate.png"
       ]
     }
   ]
