@@ -25,7 +25,7 @@ const method = req.method || "";
 // ============================================
 // BoxJs Keys & 配置读取
 // ============================================
-const KEY_BLOCK_TRADE = "GATE_BLOCK_ORDER";       // 拦截开关 (Boolean)
+const KEY_BLOCK_TRADE = "GATE_BLOCK_TRADE";       // 拦截开关 (Boolean)
 const KEY_MAGNIFICATION = "GATE_MAGNIFICATION";   // 放大倍数
 const KEY_COOLDOWN = "GATE_COOLDOWN_MINUTES";     // 冷却时间
 const KEY_SCRIPT_NAME = "GATE_SCRIPT_NAME";       // 脚本自定义名称
