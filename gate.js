@@ -89,7 +89,6 @@ if (
             "当前处于风控状态，已拦截下单请求"
         );
 
-        // ⚠️ 直接在 request 阶段返回伪造响应
         $done({
             status: 200,
             body: JSON.stringify({
@@ -99,7 +98,6 @@ if (
                 data: null
             })
         });
-        return;
     }
 }
 
