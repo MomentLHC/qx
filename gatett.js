@@ -24,7 +24,8 @@ const method = req.method || "";
 // ========================
 if (
     method === "POST" &&
-    url.includes("/apim/v3/futures/usdt/orders")
+    url.includes("/apim/v3/futures/usdt/orders") &&
+    !url.includes("/precheck")
 ) {
     isHandled = true;
 
