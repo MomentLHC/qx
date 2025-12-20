@@ -39,9 +39,6 @@ if (
     // 返回伪成功响应（阻断真实下单）
     $done({
         status: 200,
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify({
             code: 200,
             message: "success",
