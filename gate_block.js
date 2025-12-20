@@ -1,24 +1,21 @@
 /**
- * Gate 下单拦截器 (交易锁)
- * 功能：读取 BoxJs 开关，若开启则拦截下单请求并返回伪造成功数据。
+ * Gate Futures 下单拦截脚本 (BoxJs + 日志版)
  * Author: momentLHC
+ * * 功能：
+ * 1. 读取 BoxJs 开关判断是否拦截。
+ * 2. 拦截时返回伪造成功数据。
+ * 3. 输出调试日志。
  */
 
-const scriptName = "Gate 交易助手";
+const scriptName = "Gate 风控拦单";
 const req = $request || {};
-const method = req.method || "";
 const url = req.url || "";
+const method = req.method || "";
 
-// BoxJs Key
-const KEY_BLOCK_TRADE = "GATE_BLOCK_TRADE"; // 拦截开关
+// BoxJs 变量 Key
+const KEY_BLOCK_TRADE = "GATE_BLOCK_TRADE";
 
-// 辅助函数
-function getVal(key) {
-    const val = $persistentStore.read(key);
-    return val;
-}
-
-// 伪造的成功响应数据
+// 伪造的响应数据 (保持不变)
 const mockResponseData = {
   "code": 200,
   "message": "success",
@@ -29,7 +26,7 @@ const mockResponseData = {
     "pnl_margin": "0",
     "status": "finished",
     "refr": "0",
-    "create_time": Date.now() / 1000,
+    "create_time": Date.now() / 1000, // 稍微动态一点，避免太假
     "refu": 0,
     "finish_as": "filled",
     "id_string": "32369623556224032",
@@ -57,24 +54,36 @@ const mockResponseData = {
   }
 };
 
-// 逻辑开始
+// ========================
+// 逻辑处理
+// ========================
+
+// [日志] 1. 打印当前请求，确认脚本是否被触发
+// 如果你在日志里看不到这句话，说明正则没匹配上，或者域名没加到 MITM
+console.log(`[${scriptName}] 🔍 检测到请求: ${method} ${url}`);
+
 if (
     method === "POST" &&
-    url.includes("/apim/v3/futures/usdt/orders") &&
-    !url.includes("/precheck")
+    url.includes("/futures/usdt/orders") // 稍微放宽匹配，兼容 v3/v4
 ) {
-    // 读取开关，默认为 "false" (关闭拦截)
-    const isLockEnabled = getVal(KEY_BLOCK_TRADE) === "true";
+    // 读取 BoxJs 开关状态 (字符串 "true" 或 "false")
+    const switchStatus = $persistentStore.read(KEY_BLOCK_TRADE);
+    const isLockEnabled = switchStatus === "true";
+
+    // [日志] 2. 打印开关状态
+    console.log(`[${scriptName}] 🔒 拦截开关状态: ${switchStatus} (解析为: ${isLockEnabled})`);
 
     if (isLockEnabled) {
-        // 1. 发送通知
+        // === 执行拦截 ===
+        console.log(`[${scriptName}] 🚫 触发风控，正在拦截...`);
+
+        // 发送通知
         $notification.post(
             scriptName,
             "🚫 已禁止开单",
-            "风控开关已开启，已拦截本次下单请求。"
+            "当前处于强制风控状态，已拦截下单请求"
         );
 
-        // 2. 构造响应头
         const headers = {
             "Content-Type": "application/json;charset=UTF-8",
             "Access-Control-Allow-Origin": "*",
@@ -82,7 +91,6 @@ if (
             "Access-Control-Allow-Headers": "Content-Type,Authorization"
         };
 
-        // 3. 返回伪造响应 (拦截网络请求)
         $done({
             response: {
                 status: 200,
@@ -91,9 +99,13 @@ if (
             }
         });
     } else {
-        // 开关未开，放行
+        // === 放行请求 ===
+        console.log(`[${scriptName}] ✅ 开关未开启，放行实际请求...`);
         $done({});
     }
+
 } else {
+    // 路径不匹配，直接放行
+    // console.log(`[${scriptName}] ⚠️ 非下单接口，跳过`);
     $done({});
 }
