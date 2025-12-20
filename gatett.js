@@ -3,7 +3,7 @@
  * Author: momentLHC
 [rewrite_local]
 # 1. 拦截下单请求 (交易锁)
-^https:\/\/(app|m)\.(smartappnet|studiotv|csrqoa|zudanje|bxjddjt)\.(net|com)\/apim\/v3\/futures\/usdt\/orders url script-request-header https://raw.githubusercontent.com/momentLHC/qx/ml/gatett.js
+^https:\/\/(app|m)\.(smartappnet|studiotv|csrqoa|zudanje|bxjddjt)\.(net|com)\/apim\/v3\/futures\/usdt\/orders$ url script-request-header https://raw.githubusercontent.com/momentLHC/qx/ml/gatett.js
 
 
 [mitm]
@@ -38,7 +38,6 @@ if (
 
     // 返回伪成功响应（阻断真实下单）
     $done({
-        status: 200,
         body: JSON.stringify({
             code: 200,
             message: "success",
