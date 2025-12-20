@@ -97,7 +97,7 @@ if (method === "POST" && url.includes("/apim/v3/futures/usdt/orders") && !url.in
         $notification.post(
             getVal(KEY_SCRIPT_NAME, scriptName),
             "🚫 已禁止开单",
-            "风控开关已开启，已拦截本次下单请求并伪造成功回包。"
+            "当前处于强制贤者状态，已拦截本次下单。"
         );
 
         // 返回伪造数据，阻止网络请求
