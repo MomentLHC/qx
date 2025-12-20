@@ -10,7 +10,7 @@ const method = req.method || "";
 const url = req.url || "";
 
 // BoxJs Key
-const KEY_BLOCK_TRADE = "GATE_BLOCK_ORDER"; // 拦截开关
+const KEY_BLOCK_TRADE = "GATE_BLOCK_TRADE"; // 拦截开关
 
 // 辅助函数
 function getVal(key) {
